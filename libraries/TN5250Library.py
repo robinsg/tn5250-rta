@@ -11,16 +11,20 @@ class TN5250Library:
     def __init__(self):
         self.session_name = "robot_tn5250_session"
 
-    def start_tn5250_session(self, hostname, ssl=True):
+    def start_tn5250_session(self, hostname, ssl=True, devname=None, map=285):
         """
         Starts tn5250 in a background tmux session.
         If ssl is True, connects using 'ssl:hostname'.
+        If devname not equal None then use the specifies device name.
         """
         self.stop_tn5250_session() # Cleanup any old sessions
         
         # Construct the command: 'tn5250 ssl:172.16.8.41'
         prefix = "ssl:" if ssl else ""
-        cmd = f"tn5250 {prefix}{hostname}"
+        
+        cmd = f"tn5250 {prefix}{hostname} map={map}"
+        if devname is not None:
+            cmd += f" env.DEVNAME={devname}"
         
         logger.info(f"Starting session: {cmd}")
         

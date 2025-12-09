@@ -2,6 +2,18 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Robot Framework Debug",
+            "type": "python",
+            "request": "launch",
+            "module": "robot",
+            "args": [
+                "--outputdir", "results",
+                "tests/login.robot"
+          ],
+      "console": "integratedTerminal",
+      "justMyCode": false
+        },
+        {
             "name": "Run Current Robot Suite",
             "type": "robotcode",
             "request": "launch",

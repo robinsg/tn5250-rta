@@ -3,17 +3,18 @@ Library           ../libraries/TN5250Library.py
 Suite Teardown    Stop TN5250 Session
 
 *** Variables ***
-${HOST}        172.16.8.43
+${HOST}        172.16.8.41
 ${USER}        grobinson   # <--- Change this
 ${PASS}        R3t1re17!   # <--- Change this
-${DEVNAME}     QSECDEV11
+${DEVNAME}     QSECDEV04
+${MAP}         285
 
 *** Test Cases ***
-Login To Secure AS400
-    [Documentation]    Connects to 172.16.8.41 via SSL and logs in.
+Login To Secure IBM i
+    [Documentation]    Connects to ${HOST} via SSL and logs in.
     
     # 1. Start SSL Connection
-    Start TN5250 Session    ${HOST}    ssl=${True}
+    Start TN5250 Session    ${HOST}    ssl=${True}    devname=${DEVNAME}    map=${MAP}
     
     # 2. Verify we hit the Sign On Screen
     Screen Should Contain    Sign On
