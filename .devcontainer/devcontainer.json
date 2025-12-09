@@ -15,8 +15,7 @@
       ]
     }
   },
-  // This command keeps the container running so you can work in it
-  // (It overrides the 'CMD ["robot"...]' in your Dockerfile)
-  "postCreateCommand": "echo 'Container Ready! TN5250 v0.18 installed.'",
+  // Configure git and setup container on creation
+  "postCreateCommand": "git config --global user.name 'Glenn Robinson' && git config --global user.email 'Glenn.Robinson@rsipvm.com' && echo 'Container Ready! TN5250 installed.'",
   "remoteUser": "root"
 }
