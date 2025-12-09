@@ -1,0 +1,22 @@
+{
+  "name": "Robot TN5250 Dev",
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "context": ".."
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python"
+      },
+      "extensions": [
+        "d-biehl.robotcode",   // Robot Framework Syntax
+        "ms-python.python"     // Python Support
+      ]
+    }
+  },
+  // This command keeps the container running so you can work in it
+  // (It overrides the 'CMD ["robot"...]' in your Dockerfile)
+  "postCreateCommand": "echo 'Container Ready! TN5250 v0.18 installed.'",
+  "remoteUser": "root"
+}

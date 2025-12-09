@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Current Robot Suite",
+            "type": "robotcode",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "target": "${file}",
+            "args": [
+                "--outputdir", "results",
+                "--loglevel", "INFO"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Run All Tests",
+            "type": "robotcode",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "target": ".",
+            "args": [
+                "--outputdir", "results"
+            ],
+            "console": "integratedTerminal"
+        }
+    ]
+}
