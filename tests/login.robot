@@ -1,13 +1,7 @@
 *** Settings ***
+Variables      ../variables.py
 Library           ../libraries/TN5250Library.py    True
 Suite Teardown    Stop TN5250 Session
-
-*** Variables ***
-${HOST}        172.16.8.41
-${USER}        grobinson   # <--- Change this
-${PASS}        R3t1re17!   # <--- Change this
-${DEVNAME}     QSECDEV06
-${MAP}         285
 
 *** Test Cases ***
 Login To Secure IBM i

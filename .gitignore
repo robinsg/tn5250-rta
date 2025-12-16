@@ -10,3 +10,4 @@ results
 # --- Python Artifacts ---
 *.pyc
 __pycache__/
+variables.py
