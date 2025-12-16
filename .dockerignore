@@ -1,0 +1,46 @@
+# --- Version Control ---
+.git
+.gitignore
+.gitlab-ci.yml
+.github
+
+# --- Python & Dependencies ---
+# Never copy the local virtual environment. The container builds its own.
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+pip-log.txt
+pip-delete-this-directory.txt
+
+# --- Robot Framework Artifacts ---
+# Don't copy old test reports into the new image
+results/
+log.html
+report.html
+output.xml
+screenshots/
+
+# --- IDE & Editor Configs ---
+.vscode/
+.idea/
+.project
+.settings/
+*.swp
+*.swo
+
+# --- OS Generated Files ---
+.DS_Store
+Thumbs.db
+
+# --- Docker ---
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# --- Secrets (Safety Net) ---
+.env
+*.pem
+*.key
