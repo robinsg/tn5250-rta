@@ -16,6 +16,7 @@
     }
   },
   // Configure git and setup container on creation
+  "runArgs": ["--network=host"],
   "postCreateCommand": "git config --global user.name 'Glenn Robinson' && git config --global user.email 'Glenn.Robinson@rsipvm.com' && echo 'Container Ready! TN5250 installed.'",
   "remoteUser": "root"
 }
