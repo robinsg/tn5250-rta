@@ -2,6 +2,14 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Run current Robot file",
+            "type": "python",
+            "request": "launch",
+            "module": "robot.run",
+            "args": ["${file}"],
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Robot Framework Debug",
             "type": "python",
             "request": "launch",
@@ -12,29 +20,6 @@
           ],
       "console": "integratedTerminal",
       "justMyCode": false
-        },
-        {
-            "name": "Run Current Robot Suite",
-            "type": "robotcode",
-            "request": "launch",
-            "cwd": "${workspaceFolder}",
-            "target": "${file}",
-            "args": [
-                "--outputdir", "results",
-                "--loglevel", "INFO"
-            ],
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Run All Tests",
-            "type": "robotcode",
-            "request": "launch",
-            "cwd": "${workspaceFolder}",
-            "target": ".",
-            "args": [
-                "--outputdir", "results"
-            ],
-            "console": "integratedTerminal"
         }
     ]
 }

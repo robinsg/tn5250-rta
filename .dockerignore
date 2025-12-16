@@ -36,8 +36,6 @@ screenshots/
 Thumbs.db
 
 # --- Docker ---
-Dockerfile
-.dockerignore
 docker-compose.yml
 
 # --- Secrets (Safety Net) ---

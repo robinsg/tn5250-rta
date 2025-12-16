@@ -6,7 +6,7 @@ Suite Teardown    Stop TN5250 Session
 ${HOST}        172.16.8.41
 ${USER}        grobinson   # <--- Change this
 ${PASS}        R3t1re17!   # <--- Change this
-${DEVNAME}     QSECDEV04
+${DEVNAME}     QSECDEV10
 ${MAP}         285
 
 *** Test Cases ***
