@@ -29,6 +29,7 @@ RUN apt-get update && apt-get install -y \
     libssl3 \
     iputils-ping \
     git \
+    imagemagick \
     && rm -rf /var/lib/apt/lists/*
 
 # 1. Copy the Binary
