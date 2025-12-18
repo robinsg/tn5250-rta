@@ -8,7 +8,7 @@ Login To Secure IBM i
     [Documentation]    Connects to ${HOST} via SSL and logs in.
     
     # Start SSL Connection
-    Start TN5250 Session    ${HOST}    ssl=${True}    devname=${DEVNAME}    map=${MAP}
+    Start TN5250 Session    ${HOST}    ssl=${SSL}    devname=${DEVNAME}    map=${MAP}
 
     # Verify we hit the Sign On Screen
     Screen Should Contain    Sign On

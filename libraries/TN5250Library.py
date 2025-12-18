@@ -36,7 +36,7 @@ class TN5250Library:
         if getattr(self, "verbose", False):
             logger.console(message)
 
-    def start_tn5250_session(self, hostname, ssl=True, devname=None, map=285):
+    def start_tn5250_session(self, hostname, ssl, devname=None, map=285):
         """
         Starts tn5250 in a background tmux session.
         If ssl is True, connects using 'ssl:hostname'.
