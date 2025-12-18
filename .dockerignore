@@ -39,6 +39,5 @@ Thumbs.db
 docker-compose.yml
 
 # --- Secrets (Safety Net) ---
-.env
 *.pem
 *.key

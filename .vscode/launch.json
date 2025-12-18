@@ -7,6 +7,7 @@
             "request": "launch",
             "module": "robot.run",
             "args": ["${file}"],
+            "envFile": "${workspaceFolder}/.env",
             "console": "integratedTerminal"
         },
         {
@@ -18,8 +19,9 @@
                 "--outputdir", "results",
                 "tests/login.robot"
           ],
-      "console": "integratedTerminal",
-      "justMyCode": false
+            "envFile": "${workspaceFolder}/.env",
+            "console": "integratedTerminal",
+            "justMyCode": false
         }
     ]
 }
