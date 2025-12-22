@@ -79,24 +79,6 @@ git push --force --all origin
 git push --force --tags origin
 ```
 
-### Option 3: Use GitHub CLI
-
-A repository administrator with push access needs to run:
-
-```bash
-# Pull the latest version of this branch locally
-git fetch origin copilot/cleanup-secure-file-sync
-git checkout copilot/cleanup-secure-file-sync
-
-# Run one of the cleanup methods above (Option 1 or 2)
-
-# Force push the cleaned history
-gh repo clone robinsg/tn5250-rt
-cd tn5250-rt
-# ... perform cleanup ...
-git push --force origin --all
-```
-
 ### Option 3: Contact GitHub Support
 
 If you don't have access to perform the history rewrite or prefer GitHub to handle the sensitive data removal:
@@ -104,7 +86,7 @@ If you don't have access to perform the history rewrite or prefer GitHub to hand
 1. Go to https://support.github.com/
 2. Request removal of sensitive data from the repository
 3. Provide the commit SHA and file paths:
-   - Commits before `8568c00` may contain sensitive data in `.env` and `.env.sh`
+   - Commits `8d87c4d` and earlier contain sensitive data in `.env` and `.env.sh`
    - These files contained TN5250 credentials
 
 GitHub's support team can help remove this data using their internal tools.
