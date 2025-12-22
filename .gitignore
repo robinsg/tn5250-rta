@@ -11,3 +11,7 @@ results
 *.pyc
 __pycache__/
 variables.py
+
+# --- Environment Files ---
+.env
+.env.sh 
