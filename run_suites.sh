@@ -175,7 +175,12 @@ for i in "${!MAIN_SUITES[@]}"; do
     echo ""
 done
 
-# STEP 3: Print summary (logout will run via cleanup trap)
+# STEP 3: Clean up .txt screenshot files
+echo "Cleaning up .txt screenshot files..."
+find results/screenshots -name "*.txt" -type f -delete 2>/dev/null || true
+echo ""
+
+# STEP 4: Print summary (logout will run via cleanup trap)
 echo "=========================================="
 echo "Test Suite Execution Summary"
 echo "=========================================="
