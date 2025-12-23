@@ -82,6 +82,7 @@ echo "=========================================="
 echo "Total suites: $TOTAL_SUITES"
 if [ -n "$ROBOT_ARGS" ]; then
     echo "Robot args: $ROBOT_ARGS"
+    echo "Note: Suites without matching tests will be skipped"
 fi
 echo ""
 
@@ -127,35 +128,48 @@ for i in "${!MAIN_SUITES[@]}"; do
     
     # Run robot with exitonfailure for this suite
     # Output goes to suite-specific results directory
+    # Suppress stderr for cleaner output when no tests match (exit 252)
+    ROBOT_STDERR=$(mktemp)
     if robot \
         --exitonfailure \
         --output "$RESULTS_DIR/output_${SUITE_NAME}.xml" \
         --log "$RESULTS_DIR/log_${SUITE_NAME}.html" \
         --report "$RESULTS_DIR/report_${SUITE_NAME}.html" \
         $ROBOT_ARGS \
-        "$SUITE"; then
+        "$SUITE" 2>"$ROBOT_STDERR"; then
         
         echo "✓ PASSED: $SUITE"
         PASSED_SUITES=$((PASSED_SUITES + 1))
+        rm -f "$ROBOT_STDERR"
     else
         EXIT_CODE=$?
-        echo "✗ FAILED: $SUITE (exit code: $EXIT_CODE)"
-        FAILED_SUITES=$((FAILED_SUITES + 1))
-        FAILED_SUITE_LIST="${FAILED_SUITE_LIST}  - $SUITE_NAME (exit $EXIT_CODE)\n"
         
-        # Stop execution on first failure, logout will run via cleanup
-        echo ""
-        echo "=========================================="
-        echo "Test Suite Execution Summary"
-        echo "=========================================="
-        echo "Test suite failed - aborting remaining tests"
-        echo "Passed: $PASSED_SUITES/$TOTAL_SUITES (excluding logout)"
-        echo "Failed: $FAILED_SUITES/$TOTAL_SUITES (excluding logout)"
-        echo ""
-        echo "Failed Suites:"
-        echo -e "$FAILED_SUITE_LIST"
-        echo ""
-        exit $EXIT_CODE
+        # Exit code 252 means no tests matched the tag filter - this is OK
+        if [ $EXIT_CODE -eq 252 ]; then
+            echo "⊘ SKIPPED: $SUITE (no tests match tag filter)"
+            rm -f "$ROBOT_STDERR"
+        else
+            # Real error - show stderr and fail
+            cat "$ROBOT_STDERR" >&2
+            rm -f "$ROBOT_STDERR"
+            echo "✗ FAILED: $SUITE (exit code: $EXIT_CODE)"
+            FAILED_SUITES=$((FAILED_SUITES + 1))
+            FAILED_SUITE_LIST="${FAILED_SUITE_LIST}  - $SUITE_NAME (exit $EXIT_CODE)\n"
+            
+            # Stop execution on first failure, logout will run via cleanup
+            echo ""
+            echo "=========================================="
+            echo "Test Suite Execution Summary"
+            echo "=========================================="
+            echo "Test suite failed - aborting remaining tests"
+            echo "Passed: $PASSED_SUITES/$TOTAL_SUITES (excluding logout)"
+            echo "Failed: $FAILED_SUITES/$TOTAL_SUITES (excluding logout)"
+            echo ""
+            echo "Failed Suites:"
+            echo -e "$FAILED_SUITE_LIST"
+            echo ""
+            exit $EXIT_CODE
+        fi
     fi
     
     echo ""
