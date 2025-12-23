@@ -4,7 +4,7 @@ Suite Setup    Open Session To Host
 Suite Teardown    Close Session
 
 *** Test Cases ***
-Login To Secure IBM i
+Login To IBM i
     [Documentation]    Verifies successful login with valid credentials
     [Tags]    login    smoke
     

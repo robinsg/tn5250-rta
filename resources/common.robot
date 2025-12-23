@@ -1,6 +1,6 @@
 *** Settings ***
-Variables    variables.py
-Library      libraries/TN5250Library.py    True
+Variables    ${EXECDIR}/variables.py
+Library      ${EXECDIR}/libraries/TN5250Library.py    True
 
 *** Keywords ***
 Open Session To Host
