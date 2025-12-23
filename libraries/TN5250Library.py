@@ -148,7 +148,7 @@ class TN5250Library:
                         "DejaVu-Sans-Mono",
                         "-pointsize",
                         "12",
-                        "label:@-",
+                        f"label:@{txt_path}",
                         png_path,
                     ],
                     input=result.stdout,
