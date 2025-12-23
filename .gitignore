@@ -12,6 +12,6 @@ results
 __pycache__/
 variables.py
 
-# --- Sensitive Environment Files ---
+# --- Environment Files ---
 .env
-.env.sh
+.env.sh 
