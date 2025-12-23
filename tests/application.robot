@@ -6,8 +6,8 @@ Verify Application Installation
     [Documentation]    Verifies application files and libraries are installed
     [Tags]    application    installation
     
-    # TODO: Implement application installation verification
-    Log    Application installation verification not yet implemented
+     Execute Command And Verify    dsplib inprddta
+     Send Special Key    F3
     
 Verify Application Functionality
     [Documentation]    Tests core application functionality

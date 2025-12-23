@@ -6,9 +6,8 @@ Verify Database Objects
     [Documentation]    Verifies database libraries and objects exist
     [Tags]    database    objects
     
-    # TODO: Implement database object verification tests
-    # Example: Check for critical libraries, files, and objects
-    Log    Database object verification not yet implemented
+    Execute Command And Verify    RUNQRY QRYFILE((QIWS/QCUSTCDT))
+    Send Special Key    F3
     
 Check Database Integrity
     [Documentation]    Performs integrity checks on database files

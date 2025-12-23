@@ -13,4 +13,5 @@ Verify System Status
     [Tags]    system    status
     Send Special Key    F3
     Execute Command And Verify    DSPSYSVAL SYSVAL(QSECURITY)
+    Send Special Key    F3
 

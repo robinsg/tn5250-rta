@@ -3,6 +3,12 @@
 # - login.robot runs first and establishes the session
 # - Other test suites run sequentially, sharing the session
 # - logout.robot runs at the end (always, even on failure)
+#
+# Usage:
+#   ./run_suites.sh                          # Run all tests
+#   ./run_suites.sh --include smoke          # Run only smoke tests
+#   ./run_suites.sh --exclude wip            # Exclude work-in-progress tests
+#   ./run_suites.sh --include smoke --exclude slow
 
 set -e
 
@@ -16,6 +22,9 @@ if [ -f ".env.sh" ]; then
 else
     echo "Warning: .env.sh not found - tests may fail without required variables"
 fi
+
+# Capture any additional robot arguments (like --include, --exclude tags)
+ROBOT_ARGS="$@"
 
 # Define test suites in execution order (excluding login and logout)
 MAIN_SUITES=(
@@ -53,6 +62,7 @@ cleanup() {
             --output "$RESULTS_DIR/output_logout.xml" \
             --log "$RESULTS_DIR/log_logout.html" \
             --report "$RESULTS_DIR/report_logout.html" \
+            $ROBOT_ARGS \
             "$LOGOUT_SUITE"; then
             echo "✓ PASSED: $LOGOUT_SUITE"
         else
@@ -70,6 +80,9 @@ echo "=========================================="
 echo "Running Test Suite Series"
 echo "=========================================="
 echo "Total suites: $TOTAL_SUITES"
+if [ -n "$ROBOT_ARGS" ]; then
+    echo "Robot args: $ROBOT_ARGS"
+fi
 echo ""
 
 # STEP 1: Run login suite first
@@ -81,6 +94,7 @@ if robot \
     --output "$RESULTS_DIR/output_login.xml" \
     --log "$RESULTS_DIR/log_login.html" \
     --report "$RESULTS_DIR/report_login.html" \
+    $ROBOT_ARGS \
     "$LOGIN_SUITE"; then
     
     echo "✓ PASSED: $LOGIN_SUITE"
@@ -118,6 +132,7 @@ for i in "${!MAIN_SUITES[@]}"; do
         --output "$RESULTS_DIR/output_${SUITE_NAME}.xml" \
         --log "$RESULTS_DIR/log_${SUITE_NAME}.html" \
         --report "$RESULTS_DIR/report_${SUITE_NAME}.html" \
+        $ROBOT_ARGS \
         "$SUITE"; then
         
         echo "✓ PASSED: $SUITE"
