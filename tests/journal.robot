@@ -1,7 +1,5 @@
 *** Settings ***
 Resource    ../resources/common.robot
-Suite Setup    Open Session To Host
-Suite Teardown    Close Session
 
 *** Test Cases ***
 Verify Journal Entries

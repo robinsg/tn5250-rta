@@ -1,15 +1,24 @@
 #!/usr/bin/env bash
-# Sequential test suite runner with per-suite failure handling
-# Each suite stops on first failure, then continues to next suite
+# Sequential test suite runner with centralized session management
+# - login.robot runs first and establishes the session
+# - Other test suites run sequentially, sharing the session
+# - logout.robot runs at the end (always, even on failure)
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# Define test suites in execution order
-SUITES=(
-    "tests/login.robot"
+# Load environment variables
+if [ -f ".env.sh" ]; then
+    echo "Loading environment variables from .env.sh"
+    source .env.sh
+else
+    echo "Warning: .env.sh not found - tests may fail without required variables"
+fi
+
+# Define test suites in execution order (excluding login and logout)
+MAIN_SUITES=(
     "tests/system_config.robot"
     "tests/network_config.robot"
     "tests/journal.robot"
@@ -17,14 +26,45 @@ SUITES=(
     "tests/application.robot"
 )
 
+LOGIN_SUITE="tests/login.robot"
+LOGOUT_SUITE="tests/logout.robot"
+
 RESULTS_DIR="results/suites"
-TOTAL_SUITES=${#SUITES[@]}
+TOTAL_SUITES=$((${#MAIN_SUITES[@]} + 2))  # +2 for login and logout
 PASSED_SUITES=0
 FAILED_SUITES=0
 FAILED_SUITE_LIST=""
+LOGIN_SUCCESSFUL=false
 
 # Create results directory
 mkdir -p "$RESULTS_DIR"
+
+# Cleanup function to ensure logout always runs
+cleanup() {
+    local exit_code=$?
+    
+    if [ "$LOGIN_SUCCESSFUL" = true ]; then
+        echo ""
+        echo "=========================================="
+        echo "Running Logout Suite"
+        echo "=========================================="
+        
+        if robot \
+            --output "$RESULTS_DIR/output_logout.xml" \
+            --log "$RESULTS_DIR/log_logout.html" \
+            --report "$RESULTS_DIR/report_logout.html" \
+            "$LOGOUT_SUITE"; then
+            echo "✓ PASSED: $LOGOUT_SUITE"
+        else
+            echo "✗ FAILED: $LOGOUT_SUITE"
+        fi
+    fi
+    
+    exit $exit_code
+}
+
+# Register cleanup function
+trap cleanup EXIT
 
 echo "=========================================="
 echo "Running Test Suite Series"
@@ -32,10 +72,40 @@ echo "=========================================="
 echo "Total suites: $TOTAL_SUITES"
 echo ""
 
-# Run each suite sequentially
-for i in "${!SUITES[@]}"; do
-    SUITE="${SUITES[$i]}"
-    SUITE_NUM=$((i + 1))
+# STEP 1: Run login suite first
+echo "[1/$TOTAL_SUITES] Running: $LOGIN_SUITE"
+echo "-------------------------------------------"
+
+if robot \
+    --exitonfailure \
+    --output "$RESULTS_DIR/output_login.xml" \
+    --log "$RESULTS_DIR/log_login.html" \
+    --report "$RESULTS_DIR/report_login.html" \
+    "$LOGIN_SUITE"; then
+    
+    echo "✓ PASSED: $LOGIN_SUITE"
+    PASSED_SUITES=$((PASSED_SUITES + 1))
+    LOGIN_SUCCESSFUL=true
+else
+    EXIT_CODE=$?
+    echo "✗ FAILED: $LOGIN_SUITE (exit code: $EXIT_CODE)"
+    echo ""
+    echo "=========================================="
+    echo "Test Suite Execution Summary"
+    echo "=========================================="
+    echo "Login failed - aborting remaining tests"
+    echo "Passed: 0/$TOTAL_SUITES"
+    echo "Failed: 1/$TOTAL_SUITES"
+    echo ""
+    exit $EXIT_CODE
+fi
+
+echo ""
+
+# STEP 2: Run main test suites sequentially
+for i in "${!MAIN_SUITES[@]}"; do
+    SUITE="${MAIN_SUITES[$i]}"
+    SUITE_NUM=$((i + 2))  # +2 because login is #1
     SUITE_NAME=$(basename "$SUITE" .robot)
     
     echo "[$SUITE_NUM/$TOTAL_SUITES] Running: $SUITE"
@@ -51,23 +121,37 @@ for i in "${!SUITES[@]}"; do
         "$SUITE"; then
         
         echo "✓ PASSED: $SUITE"
-        ((PASSED_SUITES++))
+        PASSED_SUITES=$((PASSED_SUITES + 1))
     else
         EXIT_CODE=$?
         echo "✗ FAILED: $SUITE (exit code: $EXIT_CODE)"
-        ((FAILED_SUITES++))
+        FAILED_SUITES=$((FAILED_SUITES + 1))
         FAILED_SUITE_LIST="${FAILED_SUITE_LIST}  - $SUITE_NAME (exit $EXIT_CODE)\n"
+        
+        # Stop execution on first failure, logout will run via cleanup
+        echo ""
+        echo "=========================================="
+        echo "Test Suite Execution Summary"
+        echo "=========================================="
+        echo "Test suite failed - aborting remaining tests"
+        echo "Passed: $PASSED_SUITES/$TOTAL_SUITES (excluding logout)"
+        echo "Failed: $FAILED_SUITES/$TOTAL_SUITES (excluding logout)"
+        echo ""
+        echo "Failed Suites:"
+        echo -e "$FAILED_SUITE_LIST"
+        echo ""
+        exit $EXIT_CODE
     fi
     
     echo ""
 done
 
-# Print summary
+# STEP 3: Print summary (logout will run via cleanup trap)
 echo "=========================================="
 echo "Test Suite Execution Summary"
 echo "=========================================="
-echo "Passed: $PASSED_SUITES/$TOTAL_SUITES"
-echo "Failed: $FAILED_SUITES/$TOTAL_SUITES"
+echo "Passed: $PASSED_SUITES/$TOTAL_SUITES (excluding logout)"
+echo "Failed: $FAILED_SUITES/$TOTAL_SUITES (excluding logout)"
 echo ""
 
 if [ $FAILED_SUITES -gt 0 ]; then
@@ -76,7 +160,7 @@ if [ $FAILED_SUITES -gt 0 ]; then
     echo ""
     exit 1
 else
-    echo "All suites passed!"
+    echo "All main test suites passed!"
     echo ""
     exit 0
 fi

@@ -1,18 +1,7 @@
 *** Settings ***
 Resource    ../resources/common.robot
-Suite Setup    Open Session To Host
-Suite Teardown    Close Session
 
 *** Test Cases ***
-Login To IBM i
-    [Documentation]    Verifies successful login with valid credentials
-    [Tags]    system   configuration    status
-    
-    Verify Sign On Screen
-    Login With Credentials
-    Verify Login Success
-    Continue Login Session
-
 Verify System Configuration
     [Documentation]    Verifies basic system configuration
     [Tags]    system    configuration

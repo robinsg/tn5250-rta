@@ -1,22 +1,18 @@
 *** Settings ***
 Resource    ../resources/common.robot
 Suite Setup    Open Session To Host
-Suite Teardown    Close Session
 
 *** Test Cases ***
 Login To IBM i
     [Documentation]    Verifies successful login with valid credentials
     [Tags]    login    smoke
     
+    # Debug: Capture initial screen to see what's actually displayed
+    Sleep    2s    # Give screen time to render
+    Capture Screen    initial_screen    image=True
+    
     Verify Sign On Screen
     Login With Credentials
     Verify Login Success
-    Continue Login Session
-    
-Execute Command After Login
-    [Documentation]    Verifies command execution after successful login
-    [Tags]    login    smoke
-    
-    Execute Command And Verify    wrkactjob
-    Sign Off Session    
+    Continue Login Session    
      
