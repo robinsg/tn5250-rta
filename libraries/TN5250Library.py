@@ -358,14 +358,11 @@ class TN5250Library:
             if row_num <= len(lines):
                 line = lines[row_num - 1]
                 # For first and last rows, extract the specific column range
-                if row_num == start_r and row_num == end_r:
-                    # Single row case
-                    block_lines.append(line[start_c - 1:end_c])
-                elif row_num == start_r:
-                    # First row
+                if row_num == start_r:
+                    # First row - from start_column to end of line
                     block_lines.append(line[start_c - 1:])
                 elif row_num == end_r:
-                    # Last row
+                    # Last row - from start of line to end_column
                     block_lines.append(line[:end_c])
                 else:
                     # Middle rows - take full line
