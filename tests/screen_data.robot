@@ -57,7 +57,7 @@ Test Get Message Line
 
 Test Block Text Validation Rules
     [Documentation]    Verify block text enforces row/column rules
-    Run Keyword And Expect Error    *end_row*must be at least start_row + 1*
+    Run Keyword And Expect Error    *end_row*must be >= start_row + 1*
     ...    Get Block Text    5    1    5    80
     Run Keyword And Expect Error    *end_col*must be >= start_col*
     ...    Get Block Text    1    10    3    5

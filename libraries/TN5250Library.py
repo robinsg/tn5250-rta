@@ -333,7 +333,7 @@ class TN5250Library:
         
         # Validate constraints
         if end_row < start_row + 1:
-            raise ValueError(f"end_row ({end_row}) must be at least start_row + 1 ({start_row + 1})")
+            raise ValueError(f"end_row ({end_row}) must be >= start_row + 1 ({start_row + 1})")
         if end_col < start_col:
             raise ValueError(f"end_col ({end_col}) must be >= start_col ({start_col})")
         
