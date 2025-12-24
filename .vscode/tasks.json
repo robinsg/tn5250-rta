@@ -9,6 +9,21 @@
             "presentation": {
                 "reveal": "silent"
             }
+        },
+        {
+            "label": "Run Test Suite",
+            "type": "shell",
+            "command": "bash run_suites.sh",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "focus": true
+            },
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
         }
     ]
 }
