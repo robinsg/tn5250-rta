@@ -36,7 +36,7 @@ class TN5250Library:
         Returns:
             None
 
-        Example:
+        Examples:
             Set TN5250 Verbose    True
         """
         try:
