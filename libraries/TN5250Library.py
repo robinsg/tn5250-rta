@@ -11,6 +11,16 @@ class TN5250Library:
     """
 
     def __init__(self, verbose=False):
+        """Initialize the TN5250Library.
+
+        Args:
+            verbose (bool or str, optional): Enable verbose console output.
+                Accepts boolean values or string representations like "true", "1", "yes", "y".
+                Defaults to False.
+
+        Returns:
+            None
+        """
         # Robot may pass boolean-like strings; normalize
         try:
             self.verbose = str(verbose).lower() in ("true", "1", "yes", "y")
@@ -21,7 +31,16 @@ class TN5250Library:
     def set_verbose(self, verbose=True):
         """Keyword to enable/disable verbose console output.
 
-        Usage: `Set TN5250 Verbose    True`
+        Args:
+            verbose (bool or str, optional): Enable verbose console output.
+                Accepts boolean values or string representations like "true", "1", "yes", "y".
+                Defaults to True.
+
+        Returns:
+            None
+
+        Examples:
+            Set TN5250 Verbose    True
         """
         try:
             self.verbose = str(verbose).lower() in ("true", "1", "yes", "y")
@@ -32,15 +51,37 @@ class TN5250Library:
             logger.console(f"TN5250Library verbose set to {self.verbose}")
 
     def _log(self, message):
+        """Internal logging method that logs to info and optionally to console.
+
+        Args:
+            message (str): The message to log.
+
+        Returns:
+            None
+        """
         logger.info(message)
         if getattr(self, "verbose", False):
             logger.console(message)
 
     def start_tn5250_session(self, hostname, ssl, devname=None, map=285):
-        """
-        Starts tn5250 in a background tmux session.
-        If ssl is True, connects using 'ssl:hostname'.
-        If devname not equal None then use the specifies device name.
+        """Starts tn5250 in a background tmux session.
+
+        Creates a headless tmux session with standard 80x24 screen dimensions
+        and establishes a TN5250 connection to the specified hostname.
+
+        Args:
+            hostname (str): The hostname or IP address to connect to.
+            ssl (bool or str): If True, connects using SSL ('ssl:hostname' format).
+                Accepts boolean values or string representations.
+            devname (str, optional): The device name to use for the connection.
+                If provided, sets the DEVNAME environment variable. Defaults to None.
+            map (int, optional): The character map code to use. Defaults to 285.
+
+        Returns:
+            None
+
+        Raises:
+            subprocess.CalledProcessError: If tmux session creation fails.
         """
         self.stop_tn5250_session() # Cleanup any old sessions
         
@@ -64,26 +105,75 @@ class TN5250Library:
         time.sleep(3) # Give SSL handshake a moment to finish
 
     def stop_tn5250_session(self):
-        """Kills the tmux session."""
+        """Kills the tmux session.
+
+        Terminates the active TN5250 tmux session. Errors are silently ignored
+        if the session doesn't exist.
+
+        Returns:
+            None
+        """
         self._log(f"Killing tmux session: {self.session_name}")
         subprocess.run([
             "tmux", "kill-session", "-t", self.session_name
         ], stderr=subprocess.DEVNULL)
 
     def send_text(self, text):
-        """Types text into the terminal."""
+        """Types text into the terminal.
+
+        Sends the specified text to the active TN5250 session as keyboard input.
+
+        Args:
+            text (str): The text to type into the terminal.
+
+        Returns:
+            None
+
+        Raises:
+            subprocess.CalledProcessError: If sending keys to tmux fails.
+        """
         self._log(f"Typing: '{text}'")
         subprocess.run(["tmux", "send-keys", "-t", self.session_name, text], check=True)
 
     def send_special_key(self, key_name):
-        """Sends special keys: Enter, Tab, F3, Backspace."""
+        """Sends special keys to the terminal.
+
+        Sends special keys like Enter, Tab, function keys, or Backspace to the
+        active TN5250 session. Includes a 0.5 second delay for screen refresh.
+
+        Args:
+            key_name (str): The name of the special key to send.
+                Examples: "Enter", "Tab", "F3", "Backspace", "F6", etc.
+
+        Returns:
+            None
+
+        Raises:
+            subprocess.CalledProcessError: If sending keys to tmux fails.
+        """
         self._log(f"Sending Key: {key_name}")
         subprocess.run(["tmux", "send-keys", "-t", self.session_name, key_name], check=True)
         time.sleep(0.5) # Wait for screen refresh
 
     def screen_should_contain(self, expected_text, timeout=10):
-        """
-        Waits for text to appear. Fails if timeout is reached.
+        """Waits for text to appear on screen.
+
+        Polls the TN5250 screen content until the expected text is found or
+        timeout is reached. If verbose mode is enabled, displays the matching
+        screen content. On failure, dumps the final screen content to console.
+
+        Args:
+            expected_text (str): The text to search for on the screen.
+            timeout (int or str, optional): Maximum time in seconds to wait for
+            bool: True if the text is found within the timeout period. This method
+            never returns False or None; on timeout it raises an AssertionError.
+            never returns False or None; on timeout it raises an AssertionError.
+
+        Returns:
+            bool: True if the text is found within the timeout period.
+
+        Raises:
+            AssertionError: If the timeout is reached without finding the expected text.
         """
         start_time = time.time()
         while time.time() - start_time < int(timeout):
@@ -106,10 +196,27 @@ class TN5250Library:
         raise AssertionError(f"Timeout: Text '{expected_text}' not found on screen.")
 
     def capture_screen(self, filename=None, image=False):
-        """
-        Captures the current TN5250 screen to a text file under `results/screenshots`.
-        If `image` is truthy and ImageMagick `convert` is available, also renders a PNG.
-        Returns the path to the text file.
+        """Captures the current TN5250 screen to a text file.
+
+        Saves the current screen content to a text file under `results/screenshots`.
+                If None, generates a timestamp-based name like "screen_20231225_120000".
+                <timestamp> uses the "%Y%m%d_%H%M%S" format (e.g., "screen_20231225_120000").
+                <timestamp> uses the "%Y%m%d_%H%M%S" format (e.g., "screen_20231225_120000").
+        the screen as a PNG image.
+
+        Args:
+            filename (str, optional): Base name for the output file (without extension).
+                If None, generates a timestamp-based name like "screen_20231225_120000".
+                Defaults to None.
+            image (bool or str, optional): If True, also generate a PNG image of the screen
+                using ImageMagick. Accepts boolean values or string representations like
+                "true", "1", "yes", "y". Defaults to False.
+
+        Returns:
+            str: The full path to the saved text file.
+
+        Raises:
+            subprocess.CalledProcessError: If tmux capture-pane fails.
         """
         # Normalize image flag (Robot passes strings sometimes)
         image_flag = False
