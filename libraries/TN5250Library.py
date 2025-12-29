@@ -17,6 +17,9 @@ class TN5250Library:
             verbose (bool or str, optional): Enable verbose console output.
                 Accepts boolean values or string representations like "true", "1", "yes", "y".
                 Defaults to False.
+
+        Returns:
+            None
         """
         # Robot may pass boolean-like strings; normalize
         try:
@@ -162,7 +165,9 @@ class TN5250Library:
         Args:
             expected_text (str): The text to search for on the screen.
             timeout (int or str, optional): Maximum time in seconds to wait for
-                the text to appear. Defaults to 10.
+            bool: True if the text is found within the timeout period. This method
+            never returns False or None; on timeout it raises an AssertionError.
+            never returns False or None; on timeout it raises an AssertionError.
 
         Returns:
             bool: True if the text is found within the timeout period.
@@ -194,7 +199,9 @@ class TN5250Library:
         """Captures the current TN5250 screen to a text file.
 
         Saves the current screen content to a text file under `results/screenshots`.
-        If `image` is truthy and ImageMagick `convert` is available, also renders
+                If None, generates a timestamp-based name like "screen_20231225_120000".
+                <timestamp> uses the "%Y%m%d_%H%M%S" format (e.g., "screen_20231225_120000").
+                <timestamp> uses the "%Y%m%d_%H%M%S" format (e.g., "screen_20231225_120000").
         the screen as a PNG image.
 
         Args:
