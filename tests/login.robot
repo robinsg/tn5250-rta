@@ -1,10 +1,14 @@
 *** Settings ***
+Documentation    Validates IBM i login process via TN5250 emulation.
+...              Requires valid credentials in environment variables (USER, PASS).
+
 Resource    ../resources/common.robot
 Suite Setup    Open Session To Host
 
 *** Test Cases ***
 Login To IBM i
-    [Documentation]    Verifies successful login with valid credentials
+    [Documentation]    Validates complete login flow from sign-on screen to authenticated session.
+    ...                Captures screen for troubleshooting.
     [Tags]    login    smoke
     
     # Debug: Capture initial screen to see what's actually displayed
