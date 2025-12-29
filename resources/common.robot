@@ -1,23 +1,31 @@
 *** Settings ***
+Documentation    Common keywords for TN5250 terminal emulation testing on IBM i.
+...              Provides session management, authentication, and command execution.
+...              Requires environment variables: HOST, USER, PASS, SSL, DEVNAME, MAP.
+
 Variables    ${EXECDIR}/variables.py
 Library      ${EXECDIR}/libraries/TN5250Library.py    True
 
 *** Keywords ***
 Open Session To Host
-    [Documentation]    Establishes a TN5250 session to the configured host
+    [Documentation]    Starts TN5250 session to IBM i using environment variables.
+    ...                Typically used in Suite Setup.
     Start TN5250 Session    ${HOST}    ssl=${SSL}    devname=${DEVNAME}    map=${MAP}
 
 Close Session
-    [Documentation]    Terminates the active TN5250 session
+    [Documentation]    Terminates the TN5250 session and cleans up resources.
+    ...                Typically used in Suite Teardown.
     Stop TN5250 Session
 
 Verify Sign On Screen
-    [Documentation]    Verifies the sign-on screen is displayed
+    [Documentation]    Waits for "Sign On" text to appear on screen.
+    ...                Args: timeout (default: 10 seconds).
     [Arguments]    ${timeout}=10
     Screen Should Contain    Sign On    timeout=${timeout}
 
 Login With Credentials
-    [Documentation]    Logs in with provided username and password
+    [Documentation]    Enters username and password on sign-on screen, then submits.
+    ...                Args: username (default: ${USER}), password (default: ${PASS}).
     [Arguments]    ${username}=${USER}    ${password}=${PASS}
     Send Text    ${username}
     Send Special Key    Tab
@@ -25,22 +33,24 @@ Login With Credentials
     Send Special Key    Enter
 
 Verify Login Success
-    [Documentation]    Confirms login was successful by checking for sign-on info
+    [Documentation]    Waits for "Sign-on Information" text confirming successful login.
+    ...                Args: timeout (default: 10 seconds).
     [Arguments]    ${timeout}=10
     Screen Should Contain    Sign-on Information    timeout=${timeout}
 
 Continue Login Session
-    [Documentation]    Completes the post-login flow
+    [Documentation]    Presses Enter to proceed past sign-on information screen.
     Send Special Key    Enter
 
 Execute Command And Verify
-    [Documentation]    Sends a command and captures the screen
+    [Documentation]    Types command, presses Enter, and captures screen.
+    ...                Args: command (IBM i command to execute).
     [Arguments]    ${command}
     Send Text    ${command}
     Send Special Key    Enter
     Capture Screen    image=True
 
 Sign Off Session
-    [Documentation]    Gracefully signs off from the session
+    [Documentation]    Executes SIGNOFF command to gracefully terminate session.
     Send Text    signoff
     Send Special Key    Enter
