@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tn5250-rta"
+version = "1.0.0"
+description = "Robot Framework Test Automation for TN5250 terminal emulation on IBM i"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+    {name = "TN5250-RTA Project"}
+]
+dependencies = [
+    "robotframework==7.4",
+    "robotframework-datadriver==1.11.2"
+]
+
+[project.urls]
+Repository = "https://github.com/robinsg/tn5250-rt"
+
+[tool.robot]
+# Robot Framework configuration can be added here if needed

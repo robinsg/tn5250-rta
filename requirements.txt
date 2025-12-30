@@ -1,2 +1,9 @@
-robotframework
-robotframework-datadriver
+# Robot Framework and Extensions
+robotframework==7.4
+robotframework-datadriver==1.11.2
+
+# Standard library dependencies (already in Python stdlib)
+# - subprocess
+# - time  
+# - os
+# - datetime
