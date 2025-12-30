@@ -45,12 +45,16 @@ fi
 echo "Running tests for LPAR: ${LPAR_NAME}"
 echo ""
 
-# Load environment variables
-if [ -f ".env.sh" ]; then
-    echo "Loading environment variables from .env.sh"
+# Load LPAR-specific environment variables
+LPAR_ENV_FILE=".envs/.env.sh.${LPAR_NAME}"
+if [ -f "${LPAR_ENV_FILE}" ]; then
+    echo "Loading LPAR-specific environment variables from ${LPAR_ENV_FILE}"
+    source "${LPAR_ENV_FILE}"
+elif [ -f ".env.sh" ]; then
+    echo "Loading fallback environment variables from .env.sh"
     source .env.sh
 else
-    echo "Warning: .env.sh not found - tests may fail without required variables"
+    echo "Warning: No environment file found (${LPAR_ENV_FILE} or .env.sh) - tests may fail without required variables"
 fi
 
 # Capture any additional robot arguments (like --include, --exclude tags)

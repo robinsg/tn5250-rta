@@ -19,4 +19,9 @@ variables.py
 
 # --- Environment Files ---
 .env
-.env.sh 
+.env.sh
+.envs/.env*
+.envs/.env.sh.*
+# Keep template files
+!.envs/.env.template
+!.envs/.env.sh.template 
