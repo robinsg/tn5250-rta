@@ -226,7 +226,13 @@ class TN5250Library:
             image_flag = False
 
         ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        out_dir = os.path.join("results", "screenshots")
+        
+        # Use LPAR-specific screenshot directory if LPAR_NAME is set
+        lpar_name = os.environ.get("LPAR_NAME", "")
+        if lpar_name:
+            out_dir = os.path.join("results", lpar_name, "screenshots")
+        else:
+            out_dir = os.path.join("results", "screenshots")
         os.makedirs(out_dir, exist_ok=True)
 
         base = filename if filename else f"screen_{ts}"

@@ -1,11 +1,16 @@
 # --- Robot Framework Artifacts ---
 # Don't copy old test reports into the new image
-results/
+results/**/*.xml
+results/**/*.html
+results/**/*.png
+results/**/*.txt
 log.html
 report.html
 output.xml
 screenshots/
-results
+# Keep directory structure but ignore generated files
+!results/**/suites/.gitkeep
+!results/**/screenshots/.gitkeep
 
 # --- Python Artifacts ---
 *.pyc
