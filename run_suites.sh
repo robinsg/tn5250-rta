@@ -5,40 +5,109 @@
 # - logout.robot runs at the end (always, even on failure)
 #
 # Usage:
-#   ./run_suites.sh                          # Run all tests
-#   ./run_suites.sh --include smoke          # Run only smoke tests
-#   ./run_suites.sh --exclude wip            # Exclude work-in-progress tests
-#   ./run_suites.sh --include smoke --exclude slow
+#   ./run_suites.sh <LPAR_NAME>                          # Run all tests for LPAR
+#   ./run_suites.sh <LPAR_NAME> --include smoke          # Run only smoke tests
+#   ./run_suites.sh <LPAR_NAME> --exclude wip            # Exclude work-in-progress tests
+#   ./run_suites.sh <LPAR_NAME> --include smoke --exclude slow
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# Load environment variables
-if [ -f ".env.sh" ]; then
-    echo "Loading environment variables from .env.sh"
+# Check for LPAR name parameter
+if [ -z "$1" ]; then
+    echo "Error: LPAR name is required"
+    echo "Usage: $0 <LPAR_NAME> [robot_args...]"
+    echo "Example: $0 dev400 --include smoke"
+    exit 1
+fi
+
+LPAR_NAME="${1,,}"  # Convert to lowercase
+shift  # Remove LPAR_NAME from arguments
+
+# Export LPAR_NAME so it's available to the test library
+export LPAR_NAME
+
+# Validate LPAR directories exist
+if [ ! -d "tests/${LPAR_NAME}" ]; then
+    echo "Error: LPAR directory 'tests/${LPAR_NAME}' does not exist"
+    echo "Please create the directory before running tests"
+    exit 1
+fi
+
+if [ ! -d "results/${LPAR_NAME}" ]; then
+    echo "Error: LPAR directory 'results/${LPAR_NAME}' does not exist"
+    echo "Please create the directory before running tests"
+    exit 1
+fi
+
+echo "Running tests for LPAR: ${LPAR_NAME}"
+echo ""
+
+# Load LPAR-specific environment variables
+LPAR_ENV_FILE=".envs/.env.sh.${LPAR_NAME}"
+if [ -f "${LPAR_ENV_FILE}" ]; then
+    echo "Loading LPAR-specific environment variables from ${LPAR_ENV_FILE}"
+    source "${LPAR_ENV_FILE}"
+elif [ -f ".env.sh" ]; then
+    echo "Loading fallback environment variables from .env.sh"
     source .env.sh
 else
-    echo "Warning: .env.sh not found - tests may fail without required variables"
+    echo "Warning: No environment file found (${LPAR_ENV_FILE} or .env.sh) - tests may fail without required variables"
 fi
 
 # Capture any additional robot arguments (like --include, --exclude tags)
 ROBOT_ARGS="$@"
 
-# Define test suites in execution order (excluding login and logout)
-MAIN_SUITES=(
-    "tests/system_config.robot"
-    "tests/network_config.robot"
-    "tests/journal.robot"
-    "tests/database.robot"
-    "tests/application.robot"
+# Helper function to find test suite (LPAR-specific or common)
+find_suite() {
+    local suite_name="$1"
+    local lpar_suite="tests/${LPAR_NAME}/${suite_name}"
+    local common_suite="tests/common/${suite_name}"
+    
+    if [ -f "$lpar_suite" ]; then
+        echo "$lpar_suite"
+    elif [ -f "$common_suite" ]; then
+        echo "$common_suite"
+    else
+        echo ""
+    fi
+}
+
+# Define test suite names in execution order (excluding login and logout)
+SUITE_NAMES=(
+    "system_config.robot"
+    "network_config.robot"
+    "journal.robot"
+    "database.robot"
+    "application.robot"
 )
 
-LOGIN_SUITE="tests/login.robot"
-LOGOUT_SUITE="tests/logout.robot"
+# Build actual suite paths using LPAR-specific or common files
+MAIN_SUITES=()
+for suite_name in "${SUITE_NAMES[@]}"; do
+    suite_path=$(find_suite "$suite_name")
+    if [ -n "$suite_path" ]; then
+        MAIN_SUITES+=("$suite_path")
+    fi
+done
 
-RESULTS_DIR="results/suites"
+# Find login and logout suites
+LOGIN_SUITE=$(find_suite "login.robot")
+LOGOUT_SUITE=$(find_suite "logout.robot")
+
+if [ -z "$LOGIN_SUITE" ]; then
+    echo "Error: login.robot not found in tests/${LPAR_NAME}/ or tests/common/"
+    exit 1
+fi
+
+if [ -z "$LOGOUT_SUITE" ]; then
+    echo "Error: logout.robot not found in tests/${LPAR_NAME}/ or tests/common/"
+    exit 1
+fi
+
+RESULTS_DIR="results/${LPAR_NAME}/suites"
 TOTAL_SUITES=$((${#MAIN_SUITES[@]} + 2))  # +2 for login and logout
 PASSED_SUITES=0
 FAILED_SUITES=0
@@ -177,7 +246,7 @@ done
 
 # STEP 3: Clean up .txt screenshot files
 echo "Cleaning up .txt screenshot files..."
-find results/screenshots -name "*.txt" -type f -delete 2>/dev/null || true
+find results/${LPAR_NAME}/screenshots -name "*.txt" -type f -delete 2>/dev/null || true
 echo ""
 
 # STEP 4: Print summary (logout will run via cleanup trap)

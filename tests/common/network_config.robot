@@ -2,7 +2,7 @@
 Documentation    Validates IBM i network configuration and connectivity.
 ...              Tests network interfaces, status, and routing.
 
-Resource    ../resources/common.robot
+Resource    ../../resources/common.robot
 
 *** Test Cases ***
 Verify Network Configuration

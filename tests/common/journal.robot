@@ -2,7 +2,7 @@
 Documentation    Validates IBM i journaling functionality.
 ...              Journals provide audit trails and recovery capabilities.
 
-Resource    ../resources/common.robot
+Resource    ../../resources/common.robot
 
 *** Test Cases ***
 Verify Journal Entries

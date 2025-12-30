@@ -2,7 +2,7 @@
 Documentation    Validates IBM i application installation and functionality.
 ...              Tests INPRDDTA library as reference. Requires application access authority.
 
-Resource    ../resources/common.robot
+Resource    ../../resources/common.robot
 
 *** Test Cases ***
 Verify Application Installation
