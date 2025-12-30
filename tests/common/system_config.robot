@@ -2,7 +2,7 @@
 Documentation    Validates IBM i system configuration and status.
 ...              Checks OS/400 licensing (5770SS1) and security settings (QSECURITY).
 
-Resource    ../resources/common.robot
+Resource    ../../resources/common.robot
 
 *** Test Cases ***
 Verify System Configuration

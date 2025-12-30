@@ -19,11 +19,11 @@ cd "$SCRIPT_DIR"
 if [ -z "$1" ]; then
     echo "Error: LPAR name is required"
     echo "Usage: $0 <LPAR_NAME> [robot_args...]"
-    echo "Example: $0 DEV400 --include smoke"
+    echo "Example: $0 dev400 --include smoke"
     exit 1
 fi
 
-LPAR_NAME="$1"
+LPAR_NAME="${1,,}"  # Convert to lowercase
 shift  # Remove LPAR_NAME from arguments
 
 # Export LPAR_NAME so it's available to the test library
