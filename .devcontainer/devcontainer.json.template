@@ -1,0 +1,27 @@
+{
+  "name": "Robot TN5250 Dev",
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "context": ".."
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python"
+      },
+      "extensions": [
+        "d-biehl.robotcode",   // Robot Framework Syntax
+        "ms-python.python"     // Python Support
+      ]
+    }
+  },
+  // Configure git and setup container on creation
+  // Add hostnames to container's /etc/hosts at runtime (replace IPs as needed)
+  "runArgs": [
+    "--network=host",
+    "--add-host=dev400:192.168.0.100",
+    "--add-host=prod400:192.168.0.101"
+  ],
+  "postCreateCommand": "git config --global user.name 'Your Name' && git config --global user.email 'your.email@example.com' && echo 'Container Ready! TN5250 installed.'",
+  "remoteUser": "root"
+}

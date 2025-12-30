@@ -30,4 +30,10 @@ variables.py
 .envs/.env.sh.*
 # Keep template files
 !.envs/.env.template.*
-!.envs/.env.sh.template.* 
+!.envs/.env.sh.template.*
+
+# --- DevContainer Files ---
+# Ignore customer-specific devcontainer configuration
+.devcontainer/devcontainer.json
+# Keep template file
+!.devcontainer/devcontainer.json.template 
