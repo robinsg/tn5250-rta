@@ -12,6 +12,12 @@ screenshots/
 !results/**/suites/.gitkeep
 !results/**/screenshots/.gitkeep
 
+# --- LPAR-specific test files ---
+# Ignore .robot files in all tests subdirectories
+tests/**/*.robot
+# But keep common tests
+!tests/common/*.robot
+
 # --- Python Artifacts ---
 *.pyc
 __pycache__/
