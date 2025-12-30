@@ -104,6 +104,55 @@ class TN5250Library:
         
         time.sleep(3) # Give SSL handshake a moment to finish
 
+    def start_hmc_console_session(self, hmc_host, hmc_port, hmc_user, hmc_pass, 
+                                   hmc_sysname, hmc_lpar, hmc_sharekey, map=285):
+        """Starts tn5250 HMC shared console session in a background tmux session.
+
+        Creates a headless tmux session with standard 80x24 screen dimensions
+        and establishes a TN5250 connection to an HMC shared console.
+
+        Args:
+            hmc_host (str): The HMC hostname or IP address to connect to.
+            hmc_port (str or int): The port number for HMC connection (typically 2301).
+            hmc_user (str): The HMC username for authentication.
+            hmc_pass (str): The HMC password for authentication.
+            hmc_sysname (str): The system name on the HMC.
+            hmc_lpar (str): The LPAR name to connect to.
+            hmc_sharekey (str): The share key for the console session.
+            map (int, optional): The character map code to use. Defaults to 285.
+
+        Returns:
+            None
+
+        Raises:
+            subprocess.CalledProcessError: If tmux session creation fails.
+        """
+        self.stop_tn5250_session() # Cleanup any old sessions
+        
+        # Build HMC connection string
+        # Format: tn5250 hmc_host:port map=285
+        # Then we'll send the authentication commands
+        cmd = f"tn5250 {hmc_host}:{hmc_port} map={map}"
+        
+        self._log(f"Starting HMC console session: {cmd}")
+        
+        # Start headless tmux session (-d) with standard 80x24 screen
+        subprocess.run([
+            "tmux", "new-session", "-d",
+            "-s", self.session_name,
+            "-x", "80", "-y", "24",
+            cmd
+        ], check=True)
+        
+        time.sleep(3) # Give connection time to establish
+        
+        # Store HMC credentials for authentication steps
+        self.hmc_user = hmc_user
+        self.hmc_pass = hmc_pass
+        self.hmc_sysname = hmc_sysname
+        self.hmc_lpar = hmc_lpar
+        self.hmc_sharekey = hmc_sharekey
+
     def stop_tn5250_session(self):
         """Kills the tmux session.
 
