@@ -59,6 +59,7 @@ Continue Login Session
 Authenticate HMC Console
     [Documentation]    Authenticates to HMC and opens shared console session.
     ...    Uses credentials stored during session setup.
+    ...    NOTE: Assumes console option is 1 (standard HMC menu), adjust if needed.
     ...    Args: timeout (default: 10 seconds).
     [Arguments]    ${timeout}=10
     # Wait for HMC login prompt
@@ -71,8 +72,8 @@ Authenticate HMC Console
     Send Special Key    Enter
     Sleep    2s
     # Navigate to console session
-    # This may vary based on HMC interface, adjust as needed
-    Send Text    1    # Typically option 1 for console
+    # Option 1 is typically for console access, but may vary by HMC version
+    Send Text    1    # Select console option
     Send Special Key    Enter
 
 Execute Command And Verify
