@@ -1,11 +1,22 @@
 # --- Robot Framework Artifacts ---
 # Don't copy old test reports into the new image
-results/
+results/**/*.xml
+results/**/*.html
+results/**/*.png
+results/**/*.txt
 log.html
 report.html
 output.xml
 screenshots/
-results
+# Keep directory structure but ignore generated files
+!results/**/suites/.gitkeep
+!results/**/screenshots/.gitkeep
+
+# --- LPAR-specific test files ---
+# Ignore .robot files in all tests subdirectories
+tests/**/*.robot
+# But keep common tests
+!tests/common/*.robot
 
 # --- Python Artifacts ---
 *.pyc
@@ -14,4 +25,9 @@ variables.py
 
 # --- Environment Files ---
 .env
-.env.sh 
+.env.sh
+.envs/.env*
+.envs/.env.sh.*
+# Keep template files
+!.envs/.env.template.*
+!.envs/.env.sh.template.* 

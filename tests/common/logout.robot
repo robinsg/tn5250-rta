@@ -2,7 +2,7 @@
 Documentation    Validates IBM i logout/sign-off process.
 ...              Ensures graceful session termination.
 
-Resource    ../resources/common.robot
+Resource    ../../resources/common.robot
 Suite Teardown    Close Session
 
 *** Test Cases ***

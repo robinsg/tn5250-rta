@@ -2,7 +2,7 @@
 Documentation    Validates IBM i database functionality and integrity.
 ...              Tests using QIWS sample library. Requires database access authority.
 
-Resource    ../resources/common.robot
+Resource    ../../resources/common.robot
 
 *** Test Cases ***
 Verify Database Objects

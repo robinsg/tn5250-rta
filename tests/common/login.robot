@@ -2,7 +2,7 @@
 Documentation    Validates IBM i login process via TN5250 emulation.
 ...              Requires valid credentials in environment variables (USER, PASS).
 
-Resource    ../resources/common.robot
+Resource    ../../resources/common.robot
 Suite Setup    Open Session To Host
 
 *** Test Cases ***
