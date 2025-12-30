@@ -4,7 +4,7 @@ Documentation    Common keywords for TN5250 terminal emulation testing on IBM i.
 ...              Requires environment variables: HOST, USER, PASS, SSL, DEVNAME, MAP.
 
 Variables    ${EXECDIR}/variables.py
-Library      ${EXECDIR}/libraries/TN5250Library.py    True
+Library      ${EXECDIR}/libraries/TN5250Library.py    False
 
 *** Keywords ***
 Open Session To Host
