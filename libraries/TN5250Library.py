@@ -414,11 +414,9 @@ class TN5250Library:
         end_row = int(end_row)
         
         # Normalize case_sensitive flag
-        if isinstance(case_sensitive, bool):
-            pass  # Already a boolean
-        elif isinstance(case_sensitive, str):
+        if isinstance(case_sensitive, str):
             case_sensitive = case_sensitive.lower() not in ("false", "0", "no", "n")
-        else:
+        elif not isinstance(case_sensitive, bool):
             case_sensitive = True
 
         result = subprocess.run([
