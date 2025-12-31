@@ -2,6 +2,8 @@ import subprocess
 import time
 import os
 import datetime
+import random
+import string
 from robot.api import logger
 
 class TN5250Library:
@@ -134,6 +136,31 @@ class TN5250Library:
         """
         self._log(f"Typing: '{text}'")
         subprocess.run(["tmux", "send-keys", "-t", self.session_name, text], check=True)
+
+    def send_password(self, password):
+        """Types a password into the terminal with obfuscated logging.
+
+        Sends the password to the active TN5250 session as keyboard input,
+        but logs a random obfuscated string instead of the actual password.
+        The obfuscated string uses random characters and has a different
+        length than the actual password to prevent length-based attacks.
+
+        Args:
+            password (str): The password to type into the terminal.
+
+        Returns:
+            None
+
+        Raises:
+            subprocess.CalledProcessError: If sending keys to tmux fails.
+        """
+        # Generate random obfuscation with different length
+        # Use length between 8-16 characters, regardless of actual password length
+        obfuscated_length = random.randint(8, 16)
+        obfuscated = ''.join(random.choices(string.ascii_letters + string.digits + '!@#$%^&*', k=obfuscated_length))
+        
+        self._log(f"Typing password: '{obfuscated}'")
+        subprocess.run(["tmux", "send-keys", "-t", self.session_name, password], check=True)
 
     def send_special_key(self, key_name):
         """Sends special keys to the terminal.
