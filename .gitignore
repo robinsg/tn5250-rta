@@ -21,7 +21,7 @@ tests/**/*.robot
 # --- Python Artifacts ---
 *.pyc
 __pycache__/
-variables.py
+# variables.py loads from environment variables, so it's safe to commit
 
 # --- Environment Files ---
 .env
