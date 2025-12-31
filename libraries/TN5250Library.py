@@ -2,9 +2,8 @@ import subprocess
 import time
 import os
 import datetime
-import random
-import string
 from robot.api import logger
+from robot.utils import Secret
 
 class TN5250Library:
     """
@@ -124,9 +123,12 @@ class TN5250Library:
         """Types text into the terminal.
 
         Sends the specified text to the active TN5250 session as keyboard input.
+        Supports Robot Framework Secret type for passwords - the Secret will be
+        logged as '<secret>' but the actual value will be sent to the terminal.
 
         Args:
-            text (str): The text to type into the terminal.
+            text (str or Secret): The text to type into the terminal.
+                Can be a regular string or a Robot Framework Secret object.
 
         Returns:
             None
@@ -134,33 +136,11 @@ class TN5250Library:
         Raises:
             subprocess.CalledProcessError: If sending keys to tmux fails.
         """
-        self._log(f"Typing: '{text}'")
-        subprocess.run(["tmux", "send-keys", "-t", self.session_name, text], check=True)
-
-    def send_password(self, password):
-        """Types a password into the terminal with obfuscated logging.
-
-        Sends the password to the active TN5250 session as keyboard input,
-        but logs a random obfuscated string instead of the actual password.
-        The obfuscated string uses random characters and has a different
-        length than the actual password to prevent length-based attacks.
-
-        Args:
-            password (str): The password to type into the terminal.
-
-        Returns:
-            None
-
-        Raises:
-            subprocess.CalledProcessError: If sending keys to tmux fails.
-        """
-        # Generate random obfuscation with different length
-        # Use length between 8-16 characters, regardless of actual password length
-        obfuscated_length = random.randint(8, 16)
-        obfuscated = ''.join(random.choices(string.ascii_letters + string.digits + '!@#$%^&*', k=obfuscated_length))
+        # Extract actual value from Secret if needed, but log obfuscated version
+        actual_text = text.value if isinstance(text, Secret) else text
         
-        self._log(f"Typing password: '{obfuscated}'")
-        subprocess.run(["tmux", "send-keys", "-t", self.session_name, password], check=True)
+        self._log(f"Typing: '{text}'")
+        subprocess.run(["tmux", "send-keys", "-t", self.session_name, actual_text], check=True)
 
     def send_special_key(self, key_name):
         """Sends special keys to the terminal.

@@ -29,7 +29,7 @@ Login With Credentials
     [Arguments]    ${username}=${USER}    ${password}=${PASS}
     Send Text    ${username}
     Send Special Key    Tab
-    Send Password    ${password}
+    Send Text    ${password}
     Send Special Key    Enter
 
 Verify Login Success
