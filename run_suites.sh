@@ -131,6 +131,7 @@ cleanup() {
             --output "$RESULTS_DIR/output_logout.xml" \
             --log "$RESULTS_DIR/log_logout.html" \
             --report "$RESULTS_DIR/report_logout.html" \
+            --removekeywords NAME:Login* \
             $ROBOT_ARGS \
             "$LOGOUT_SUITE"; then
             echo "✓ PASSED: $LOGOUT_SUITE"
@@ -161,6 +162,7 @@ echo "-------------------------------------------"
 
 if robot \
     --exitonfailure \
+    --removekeywords NAME:Login* \
     --output "$RESULTS_DIR/output_login.xml" \
     --log "$RESULTS_DIR/log_login.html" \
     --report "$RESULTS_DIR/report_login.html" \
@@ -201,6 +203,7 @@ for i in "${!MAIN_SUITES[@]}"; do
     ROBOT_STDERR=$(mktemp)
     if robot \
         --exitonfailure \
+        --removekeywords NAME:Login* \
         --output "$RESULTS_DIR/output_${SUITE_NAME}.xml" \
         --log "$RESULTS_DIR/log_${SUITE_NAME}.html" \
         --report "$RESULTS_DIR/report_${SUITE_NAME}.html" \
