@@ -275,3 +275,229 @@ class TN5250Library:
                 self._log("ImageMagick `convert` not found; skipping image.")
 
         return txt_path
+
+    def get_screen_text_at_position(self, row, start_col, end_col):
+        """Get text at a specific position on the TN5250 screen.
+
+        Extracts text from the screen at the specified row and column range.
+        Rows and columns are 1-indexed (row 1 is the first row, column 1 is the first column).
+
+        Args:
+            row (int or str): The row number (1-indexed) to extract text from.
+            start_col (int or str): The starting column (1-indexed, inclusive).
+            end_col (int or str): The ending column (1-indexed, inclusive).
+
+        Returns:
+            str: The extracted text from the specified position, with leading/trailing whitespace removed.
+
+        Raises:
+            subprocess.CalledProcessError: If tmux capture-pane fails.
+            IndexError: If the row or column positions are out of range.
+        """
+        row = int(row)
+        start_col = int(start_col)
+        end_col = int(end_col)
+
+        result = subprocess.run([
+            "tmux", "capture-pane", "-p", "-t", self.session_name
+        ], capture_output=True, text=True, check=True)
+
+        lines = result.stdout.split('\n')
+        
+        if row < 1 or row > len(lines):
+            raise IndexError(f"Row {row} is out of range (1-{len(lines)})")
+        
+        # Convert to 0-indexed for Python
+        line = lines[row - 1]
+        
+        # Ensure we have enough columns
+        if start_col < 1 or end_col > len(line):
+            self._log(f"Warning: Column range {start_col}-{end_col} may be out of range for line length {len(line)}")
+        
+        # Extract text (convert to 0-indexed, end_col is inclusive)
+        text = line[start_col - 1:end_col]
+        text = text.strip()
+        
+        self._log(f"Extracted text at row {row}, cols {start_col}-{end_col}: '{text}'")
+        return text
+
+    def screen_should_contain_at_position(self, row, start_col, end_col, expected_text):
+        """Verify that specific text appears at a position on the screen.
+
+        Checks if the expected text matches the text at the specified position.
+        Comparison is case-sensitive.
+
+        Args:
+            row (int or str): The row number (1-indexed) to check.
+            start_col (int or str): The starting column (1-indexed, inclusive).
+            end_col (int or str): The ending column (1-indexed, inclusive).
+            expected_text (str): The expected text at that position.
+
+        Returns:
+            bool: True if the text matches.
+
+        Raises:
+            AssertionError: If the text does not match the expected value.
+        """
+        actual_text = self.get_screen_text_at_position(row, start_col, end_col)
+        
+        if actual_text != expected_text:
+            raise AssertionError(
+                f"Text mismatch at row {row}, cols {start_col}-{end_col}:\n"
+                f"Expected: '{expected_text}'\n"
+                f"Actual: '{actual_text}'"
+            )
+        
+        self._log(f"✓ Text matches at row {row}, cols {start_col}-{end_col}: '{expected_text}'")
+        return True
+
+    def verify_numeric_value_greater_than(self, row, start_col, end_col, min_value):
+        """Verify that a numeric value at a position is greater than a minimum value.
+
+        Extracts text from the specified position, converts it to an integer,
+        and verifies it is greater than the minimum value.
+
+        Args:
+            row (int or str): The row number (1-indexed) to check.
+            start_col (int or str): The starting column (1-indexed, inclusive).
+            end_col (int or str): The ending column (1-indexed, inclusive).
+            min_value (int or str): The minimum value (exclusive).
+
+        Returns:
+            bool: True if the numeric value is greater than min_value.
+
+        Raises:
+            AssertionError: If the value is not greater than min_value.
+            ValueError: If the extracted text cannot be converted to an integer.
+        """
+        text = self.get_screen_text_at_position(row, start_col, end_col)
+        min_value = int(min_value)
+        
+        try:
+            actual_value = int(text)
+        except ValueError:
+            raise ValueError(f"Cannot convert '{text}' to integer at row {row}, cols {start_col}-{end_col}")
+        
+        if actual_value <= min_value:
+            raise AssertionError(
+                f"Value at row {row}, cols {start_col}-{end_col} is not greater than {min_value}:\n"
+                f"Expected: > {min_value}\n"
+                f"Actual: {actual_value}"
+            )
+        
+        self._log(f"✓ Value {actual_value} > {min_value} at row {row}, cols {start_col}-{end_col}")
+        return True
+
+    def count_occurrences_in_lines(self, text, start_row, end_row, case_sensitive=True):
+        """Count occurrences of text in a specific range of lines.
+
+        Searches for the specified text in lines from start_row to end_row (inclusive)
+        and returns the count of occurrences.
+
+        Args:
+            text (str): The text to search for.
+            start_row (int or str): The starting row (1-indexed, inclusive).
+            end_row (int or str): The ending row (1-indexed, inclusive).
+            case_sensitive (bool or str, optional): If True, search is case-sensitive.
+                Accepts boolean values or string representations like "true", "1", "yes", "y".
+                Defaults to True.
+
+        Returns:
+            int: The number of occurrences found.
+
+        Raises:
+            subprocess.CalledProcessError: If tmux capture-pane fails.
+        """
+        start_row = int(start_row)
+        end_row = int(end_row)
+        
+        # Normalize case_sensitive flag
+        try:
+            case_sensitive = str(case_sensitive).lower() not in ("false", "0", "no", "n")
+        except Exception:
+            case_sensitive = True
+
+        result = subprocess.run([
+            "tmux", "capture-pane", "-p", "-t", self.session_name
+        ], capture_output=True, text=True, check=True)
+
+        lines = result.stdout.split('\n')
+        
+        # Extract the relevant line range
+        relevant_lines = lines[start_row - 1:end_row]
+        
+        count = 0
+        search_text = text if case_sensitive else text.upper()
+        
+        for line in relevant_lines:
+            search_line = line if case_sensitive else line.upper()
+            count += search_line.count(search_text)
+        
+        self._log(f"Found {count} occurrence(s) of '{text}' in rows {start_row}-{end_row}")
+        return count
+
+    def verify_occurrence_count(self, text, start_row, end_row, expected_count, case_sensitive=True):
+        """Verify that text appears a specific number of times in a line range.
+
+        Counts occurrences of text in the specified line range and verifies
+        it matches the expected count.
+
+        Args:
+            text (str): The text to search for.
+            start_row (int or str): The starting row (1-indexed, inclusive).
+            end_row (int or str): The ending row (1-indexed, inclusive).
+            expected_count (int or str): The expected number of occurrences.
+            case_sensitive (bool or str, optional): If True, search is case-sensitive.
+                Accepts boolean values or string representations like "true", "1", "yes", "y".
+                Defaults to True.
+
+        Returns:
+            bool: True if the count matches.
+
+        Raises:
+            AssertionError: If the count does not match the expected value.
+        """
+        expected_count = int(expected_count)
+        actual_count = self.count_occurrences_in_lines(text, start_row, end_row, case_sensitive)
+        
+        if actual_count != expected_count:
+            raise AssertionError(
+                f"Occurrence count mismatch for '{text}' in rows {start_row}-{end_row}:\n"
+                f"Expected: {expected_count}\n"
+                f"Actual: {actual_count}"
+            )
+        
+        self._log(f"✓ Found {actual_count} occurrence(s) of '{text}' in rows {start_row}-{end_row}")
+        return True
+
+    def verify_all_values_on_same_line(self, values_list):
+        """Verify that all values in a comma-separated list appear on the same line.
+
+        Searches the screen for a line that contains all the specified values.
+
+        Args:
+            values_list (str): Comma-separated list of values to search for (e.g., "VALUE1,VALUE2").
+
+        Returns:
+            bool: True if all values are found on the same line.
+
+        Raises:
+            AssertionError: If no line contains all the values.
+        """
+        values = [v.strip() for v in values_list.split(',')]
+        
+        result = subprocess.run([
+            "tmux", "capture-pane", "-p", "-t", self.session_name
+        ], capture_output=True, text=True, check=True)
+
+        lines = result.stdout.split('\n')
+        
+        for line_num, line in enumerate(lines, 1):
+            if all(value in line for value in values):
+                self._log(f"✓ All values {values} found on line {line_num}: '{line.strip()}'")
+                return True
+        
+        raise AssertionError(
+            f"No line found containing all values: {values}\n"
+            f"Screen content:\n{result.stdout}"
+        )
