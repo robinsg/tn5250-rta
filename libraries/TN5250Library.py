@@ -311,8 +311,10 @@ class TN5250Library:
         line = lines[row - 1]
         
         # Ensure we have enough columns
-        if start_col < 1 or end_col > len(line):
-            self._log(f"Warning: Column range {start_col}-{end_col} may be out of range for line length {len(line)}")
+        if start_col < 1:
+            raise IndexError(f"Start column {start_col} is out of range (must be >= 1)")
+        if end_col > len(line):
+            raise IndexError(f"End column {end_col} is out of range (line length is {len(line)})")
         
         # Extract text (convert to 0-indexed, end_col is inclusive)
         text = line[start_col - 1:end_col]
@@ -412,9 +414,11 @@ class TN5250Library:
         end_row = int(end_row)
         
         # Normalize case_sensitive flag
-        try:
-            case_sensitive = str(case_sensitive).lower() not in ("false", "0", "no", "n")
-        except Exception:
+        if isinstance(case_sensitive, bool):
+            pass  # Already a boolean
+        elif isinstance(case_sensitive, str):
+            case_sensitive = case_sensitive.lower() not in ("false", "0", "no", "n")
+        else:
             case_sensitive = True
 
         result = subprocess.run([
@@ -497,7 +501,12 @@ class TN5250Library:
                 self._log(f"✓ All values {values} found on line {line_num}: '{line.strip()}'")
                 return True
         
+        # Show only first 10 lines of screen content in error for readability
+        screen_preview = '\n'.join(lines[:10])
+        if len(lines) > 10:
+            screen_preview += f"\n... ({len(lines) - 10} more lines)"
+        
         raise AssertionError(
             f"No line found containing all values: {values}\n"
-            f"Screen content:\n{result.stdout}"
+            f"Screen preview (first 10 lines):\n{screen_preview}"
         )

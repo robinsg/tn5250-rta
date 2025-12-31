@@ -10,9 +10,9 @@ Verify Application Installation
     ...                Verifies numeric value at row 3 columns 68 to 71 is greater than ${DSPLIB}.
     [Tags]    application    installation
     
-     Execute Command And Verify    dsplib inprddta
-     Verify Numeric Value Greater Than    3    68    71    ${DSPLIB}
-     Send Special Key    F3
+    Execute Command And Verify    dsplib inprddta
+    Verify Numeric Value Greater Than    3    68    71    ${DSPLIB}
+    Send Special Key    F3
     
 Verify Application Functionality
     [Documentation]    Placeholder for application functionality tests.
