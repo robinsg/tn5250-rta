@@ -26,14 +26,28 @@ while IFS= read -r line || [ -n "$line" ]; do
         hostname="${BASH_REMATCH[1]}"
         ip_address="${BASH_REMATCH[2]}"
         
-        # Validate hostname (alphanumeric, hyphens, dots only)
-        if [[ ! "$hostname" =~ ^[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?$ ]]; then
+        # Validate hostname (alphanumeric, hyphens, dots only, no consecutive dots)
+        # Each label must start/end with alphanumeric, hyphens only in middle
+        if [[ ! "$hostname" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$ ]]; then
             echo "Warning: Invalid hostname format: ${hostname} - skipping"
             continue
         fi
         
-        # Validate IP address (basic IPv4 format check)
-        if [[ ! "$ip_address" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+        # Validate IP address (IPv4 with range checking)
+        if [[ "$ip_address" =~ ^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$ ]]; then
+            # Check each octet is in valid range 0-255
+            valid_ip=true
+            for octet in "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}" "${BASH_REMATCH[4]}"; do
+                if [ "$octet" -gt 255 ]; then
+                    valid_ip=false
+                    break
+                fi
+            done
+            if [ "$valid_ip" = false ]; then
+                echo "Warning: Invalid IP address (octet out of range): ${ip_address} - skipping"
+                continue
+            fi
+        else
             echo "Warning: Invalid IP address format: ${ip_address} - skipping"
             continue
         fi
