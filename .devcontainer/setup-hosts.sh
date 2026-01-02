@@ -27,7 +27,8 @@ while IFS= read -r line || [ -n "$line" ]; do
         ip_address="${BASH_REMATCH[2]}"
         
         # Validate hostname (alphanumeric, hyphens, dots only, no consecutive dots)
-        # Each label must start/end with alphanumeric, hyphens only in middle
+        # Pattern: label(.label)* where each label is alphanumeric with optional hyphens in middle
+        # Examples: dev400, prod-server, host.example.com
         if [[ ! "$hostname" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$ ]]; then
             echo "Warning: Invalid hostname format: ${hostname} - skipping"
             continue
@@ -52,9 +53,10 @@ while IFS= read -r line || [ -n "$line" ]; do
             continue
         fi
         
-        # Check if entry already exists in /etc/hosts (exact hostname match with escaped variables)
-        if grep -qF "${ip_address} ${hostname}" /etc/hosts; then
-            echo "Host entry already exists: ${hostname} -> ${ip_address}"
+        # Check if hostname already exists in /etc/hosts (prevents duplicates)
+        # Using awk for more flexible matching that handles various whitespace
+        if awk '{print $2}' /etc/hosts | grep -qFx "${hostname}"; then
+            echo "Host entry already exists for hostname: ${hostname}"
         else
             echo "Adding host entry: ${hostname} -> ${ip_address}"
             echo "${ip_address} ${hostname}" >> /etc/hosts
