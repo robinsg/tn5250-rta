@@ -21,13 +21,13 @@ while IFS= read -r line || [ -n "$line" ]; do
         continue
     fi
     
-    # Parse hostname and IP address
+    # Parse hostname and IP address (ignore any trailing fields/comments)
     if [[ "$line" =~ ^[[:space:]]*([^[:space:]]+)[[:space:]]+([^[:space:]]+) ]]; then
         hostname="${BASH_REMATCH[1]}"
         ip_address="${BASH_REMATCH[2]}"
         
-        # Check if entry already exists in /etc/hosts
-        if grep -q "^${ip_address}[[:space:]].*${hostname}" /etc/hosts; then
+        # Check if entry already exists in /etc/hosts (exact hostname match)
+        if grep -qE "^${ip_address}[[:space:]]+${hostname}([[:space:]]|$)" /etc/hosts; then
             echo "Host entry already exists: ${hostname} -> ${ip_address}"
         else
             echo "Adding host entry: ${hostname} -> ${ip_address}"
