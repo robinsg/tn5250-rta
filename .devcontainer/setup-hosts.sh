@@ -26,8 +26,20 @@ while IFS= read -r line || [ -n "$line" ]; do
         hostname="${BASH_REMATCH[1]}"
         ip_address="${BASH_REMATCH[2]}"
         
-        # Check if entry already exists in /etc/hosts (exact hostname match)
-        if grep -qE "^${ip_address}[[:space:]]+${hostname}([[:space:]]|$)" /etc/hosts; then
+        # Validate hostname (alphanumeric, hyphens, dots only)
+        if [[ ! "$hostname" =~ ^[a-zA-Z0-9]([a-zA-Z0-9.-]*[a-zA-Z0-9])?$ ]]; then
+            echo "Warning: Invalid hostname format: ${hostname} - skipping"
+            continue
+        fi
+        
+        # Validate IP address (basic IPv4 format check)
+        if [[ ! "$ip_address" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+            echo "Warning: Invalid IP address format: ${ip_address} - skipping"
+            continue
+        fi
+        
+        # Check if entry already exists in /etc/hosts (exact hostname match with escaped variables)
+        if grep -qF "${ip_address} ${hostname}" /etc/hosts; then
             echo "Host entry already exists: ${hostname} -> ${ip_address}"
         else
             echo "Adding host entry: ${hostname} -> ${ip_address}"
