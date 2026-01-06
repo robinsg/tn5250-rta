@@ -1,0 +1,67 @@
+#!/bin/bash
+# Setup script to dynamically add host entries to /etc/hosts
+# Reads configuration from .devcontainer/hosts.conf
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+HOSTS_CONF="${SCRIPT_DIR}/hosts.conf"
+
+echo "Setting up host entries from ${HOSTS_CONF}..."
+
+if [ ! -f "${HOSTS_CONF}" ]; then
+    echo "Warning: ${HOSTS_CONF} not found. Skipping host configuration."
+    exit 0
+fi
+
+# Read the hosts.conf file and add entries to /etc/hosts
+while IFS= read -r line || [ -n "$line" ]; do
+    # Skip empty lines and comments
+    if [[ -z "$line" ]] || [[ "$line" =~ ^[[:space:]]*# ]]; then
+        continue
+    fi
+    
+    # Parse hostname and IP address (ignore any trailing fields/comments)
+    if [[ "$line" =~ ^[[:space:]]*([^[:space:]]+)[[:space:]]+([^[:space:]]+) ]]; then
+        hostname="${BASH_REMATCH[1]}"
+        ip_address="${BASH_REMATCH[2]}"
+        
+        # Validate hostname (alphanumeric, hyphens, dots only, no consecutive dots)
+        # Pattern: label(.label)* where each label is alphanumeric with optional hyphens in middle
+        # Examples: dev400, prod-server, host.example.com
+        if [[ ! "$hostname" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?)*$ ]]; then
+            echo "Warning: Invalid hostname format: ${hostname} - skipping"
+            continue
+        fi
+        
+        # Validate IP address (IPv4 with range checking)
+        if [[ "$ip_address" =~ ^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$ ]]; then
+            # Check each octet is in valid range 0-255
+            valid_ip=true
+            for octet in "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}" "${BASH_REMATCH[4]}"; do
+                if [ "$octet" -gt 255 ]; then
+                    valid_ip=false
+                    break
+                fi
+            done
+            if [ "$valid_ip" = false ]; then
+                echo "Warning: Invalid IP address (octet out of range): ${ip_address} - skipping"
+                continue
+            fi
+        else
+            echo "Warning: Invalid IP address format: ${ip_address} - skipping"
+            continue
+        fi
+        
+        # Check if hostname already exists in /etc/hosts (prevents duplicates)
+        # Using awk for more flexible matching that handles various whitespace
+        if awk '{print $2}' /etc/hosts | grep -qFx "${hostname}"; then
+            echo "Host entry already exists for hostname: ${hostname}"
+        else
+            echo "Adding host entry: ${hostname} -> ${ip_address}"
+            echo "${ip_address} ${hostname}" >> /etc/hosts
+        fi
+    fi
+done < "${HOSTS_CONF}"
+
+echo "Host setup complete!"

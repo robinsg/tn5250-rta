@@ -31,3 +31,11 @@ variables.py
 # Keep template files
 !.envs/.env.template.*
 !.envs/.env.sh.template.* 
+
+# --- DevContainer Files ---
+# Ignore customer-specific devcontainer.json (use template instead)
+.devcontainer/devcontainer.json
+# Keep template and configuration files
+!.devcontainer/devcontainer.json.template
+!.devcontainer/hosts.conf
+!.devcontainer/setup-hosts.sh
