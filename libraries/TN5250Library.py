@@ -86,8 +86,14 @@ class TN5250Library:
         """
         self.stop_tn5250_session() # Cleanup any old sessions
         
+        # Normalize ssl parameter (Robot may pass strings like "0", "1", "true", etc.)
+        try:
+            ssl_enabled = str(ssl).lower() in ("true", "1", "yes", "y")
+        except Exception:
+            ssl_enabled = False
+        
         # Construct the command: 'tn5250 ssl:172.16.8.41'
-        prefix = "ssl:" if ssl else ""
+        prefix = "ssl:" if ssl_enabled else ""
         
         cmd = f"tn5250 {prefix}{hostname} map={map}"
         if devname is not None:
