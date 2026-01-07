@@ -4,10 +4,23 @@ results/**/*.xml
 results/**/*.html
 results/**/*.png
 results/**/*.txt
+results/**/*.xml
+results/**/*.html
+results/**/*.png
+results/**/*.txt
 log.html
 report.html
 output.xml
 screenshots/
+# Keep directory structure but ignore generated files
+!results/**/suites/.gitkeep
+!results/**/screenshots/.gitkeep
+
+# --- LPAR-specific test files ---
+# Ignore .robot files in all tests subdirectories
+tests/**/*.robot
+# But keep common tests
+!tests/common/*.robot
 # Keep directory structure but ignore generated files
 !results/**/suites/.gitkeep
 !results/**/screenshots/.gitkeep
@@ -35,7 +48,9 @@ variables.py
 # --- DevContainer Files ---
 # Ignore customer-specific devcontainer.json (use template instead)
 .devcontainer/devcontainer.json
+# Ignore customer-specific hosts.conf (use template instead)
+.devcontainer/hosts.conf
 # Keep template and configuration files
 !.devcontainer/devcontainer.json.template
-!.devcontainer/hosts.conf
+!.devcontainer/hosts.conf.template
 !.devcontainer/setup-hosts.sh

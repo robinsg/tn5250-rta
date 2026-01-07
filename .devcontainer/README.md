@@ -4,7 +4,11 @@ This directory contains the DevContainer configuration for the TN5250 Robot Fram
 
 ## Files
 
+<<<<<<< HEAD
 - **`devcontainer.json.template`**: Template configuration file with example hosts. Use this as a reference to create your local `devcontainer.json`.
+=======
+- **`devcontainer.template.json`**: Template configuration file with example hosts. Use this as a reference to create your local `devcontainer.json`.
+>>>>>>> 38b2252 (Copy selected files from copilot/implement-dynamic-host-configuration)
 - **`devcontainer.json`**: Your local configuration (gitignored - not committed to version control).
 - **`hosts.conf`**: Configuration file containing host-to-IP mappings. Modify this to add/remove hosts.
 - **`setup-hosts.sh`**: Startup script that reads `hosts.conf` and adds entries to `/etc/hosts`.
@@ -49,5 +53,9 @@ This directory contains the DevContainer configuration for the TN5250 Robot Fram
 ## Notes
 
 - The `devcontainer.json` file is gitignored to prevent accidental commits of customer data
+<<<<<<< HEAD
 - Always use `devcontainer.json.template` as the reference for configuration structure
+=======
+- Always use `devcontainer.template.json` as the reference for configuration structure
+>>>>>>> 38b2252 (Copy selected files from copilot/implement-dynamic-host-configuration)
 - The `hosts.conf` file is committed to version control but should only contain example/placeholder entries
