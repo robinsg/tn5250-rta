@@ -51,6 +51,6 @@ variables.py
 # Ignore customer-specific hosts.conf (use template instead)
 .devcontainer/hosts.conf
 # Keep template and configuration files
-!.devcontainer/devcontainer.json.template
+!.devcontainer/devcontainer.template.json
 !.devcontainer/hosts.conf.template
 !.devcontainer/setup-hosts.sh
