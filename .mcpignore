@@ -1,0 +1,16 @@
+# Ignore env files and secrets
+.env
+.env.sh
+.secrets/
+.cache/
+
+# Ignore Git metadata
+.git/
+
+# Ignore Python cache and logs
+__pycache__/
+*.log
+
+# Ignore test output/results
+tests/output/
+results/
