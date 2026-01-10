@@ -12,7 +12,7 @@ Login To IBM i
     [Tags]    login    smoke
     
     # Debug: Capture initial screen to see what's actually displayed
-    Sleep    2s    # Give screen time to render
+    Sleep    5s    # Give screen time to render and establish connection
     Capture Screen    initial_screen    image=True
     
     Verify Sign On Screen
