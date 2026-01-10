@@ -1,6 +1,11 @@
 # Ignore env files and secrets
 .env
 .env.sh
+.envs/.env*
+.envs/.env.sh.*
+# Keep template files
+!.envs/.env.template.*
+!.envs/.env.sh.template.* 
 .secrets/
 .cache/
 
