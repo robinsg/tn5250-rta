@@ -38,7 +38,7 @@ Comprehensive documentation is available in the following locations:
 - **[Test Suite Structure](./tests/README.md)** - Multi-LPAR test organization and execution
 - **[Password Security](./docs/PASSWORD_SECURITY.md)** - Secret handling and log security
 - **[DevContainer Setup](./.devcontainer/README.md)** - Development environment configuration
-- **[Library Documentation](./docs/TN5250Lirary.html)** - Generated API documentation for TN5250Library
+- **[Library Documentation](./docs/TN5250Library.html)** - Generated API documentation for TN5250Library
 - **[Test Overview](./docs/tests_overview.html)** - Generated Robot Framework test documentation
 
 ## Getting Started
