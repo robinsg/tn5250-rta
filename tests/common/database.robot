@@ -7,9 +7,11 @@ Resource    ../../resources/common.robot
 *** Test Cases ***
 Verify Database Objects
     [Documentation]    Confirms QIWS library and QCUSTCDT sample file are accessible via RUNQRY.
+    ...                Verifies string value at row 10 columns 35 to 46 equals ${RUNQRY}.
     [Tags]    database    objects
     
     Execute Command And Verify    RUNQRY QRYFILE((QIWS/QCUSTCDT))
+    Screen Should Contain At Position    10    35    46    ${RUNQRY}
     Send Special Key    F3
     
 Check Database Integrity
