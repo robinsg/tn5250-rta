@@ -288,3 +288,266 @@ class TN5250Library:
                 self._log("ImageMagick `convert` not found; skipping image.")
 
         return txt_path
+
+    def screen_should_contain_at_position(self, row, start_col, end_col, expected_text):
+        """Verifies that specific text appears at a given row and column position.
+
+        Extracts text from the screen at the specified coordinates and compares it
+        to the expected value. This is useful for validating field values at known
+        positions on 5250 screens.
+
+        Args:
+            row (int or str): The row number (1-based) where the text should appear.
+            start_col (int or str): The starting column number (1-based) of the text.
+            end_col (int or str): The ending column number (1-based) of the text.
+            expected_text (str): The expected text at the specified position.
+
+        Returns:
+            None
+
+        Raises:
+            AssertionError: If the actual text doesn't match the expected text.
+            subprocess.CalledProcessError: If tmux capture-pane fails.
+
+        Examples:
+            Screen Should Contain At Position    14    34    36    100
+            Screen Should Contain At Position    7     35    36    ${QSECURITY}
+        """
+        # Convert parameters to integers
+        row = int(row)
+        start_col = int(start_col)
+        end_col = int(end_col)
+        
+        # Capture current screen content
+        result = subprocess.run([
+            "tmux", "capture-pane", "-p", "-t", self.session_name
+        ], capture_output=True, text=True, check=True)
+        
+        # Split into lines (row is 1-based)
+        lines = result.stdout.splitlines()
+        
+        # Validate row number
+        if row < 1 or row > len(lines):
+            raise AssertionError(
+                f"Row {row} out of range (screen has {len(lines)} lines)"
+            )
+        
+        # Extract the line (convert to 0-based index)
+        line = lines[row - 1]
+        
+        # Extract text at specified columns (convert to 0-based indices)
+        # Columns are 1-based, so subtract 1
+        actual_text = line[start_col - 1:end_col].strip()
+        expected_text_str = str(expected_text).strip()
+        
+        self._log(
+            f"Position check: Row {row}, Cols {start_col}-{end_col}: "
+            f"Expected='{expected_text_str}', Actual='{actual_text}'"
+        )
+        
+        if actual_text != expected_text_str:
+            # On failure, show more context
+            self._log("--- SCREEN DUMP (POSITION MISMATCH) ---")
+            logger.console(result.stdout)
+            raise AssertionError(
+                f"Text at position (row={row}, cols={start_col}-{end_col}) does not match.\n"
+                f"Expected: '{expected_text_str}'\n"
+                f"Actual:   '{actual_text}'"
+            )
+
+    def verify_occurrence_count(self, search_text, start_row, end_row, expected_count, case_sensitive=True):
+        """Verifies the number of times text appears within a row range.
+
+        Counts how many times the search text appears in the specified row range
+        and compares it to the expected count.
+
+        Args:
+            search_text (str): The text to search for.
+            start_row (int or str): The starting row number (1-based).
+            end_row (int or str): The ending row number (1-based).
+            expected_count (int or str): The expected number of occurrences.
+            case_sensitive (bool or str, optional): Whether the search should be
+                case-sensitive. Defaults to True.
+
+        Returns:
+            None
+
+        Raises:
+            AssertionError: If the actual count doesn't match the expected count.
+            subprocess.CalledProcessError: If tmux capture-pane fails.
+
+        Examples:
+            Verify Occurrence Count    ${HOST}    3    7    3    case_sensitive=False
+            Verify Occurrence Count    ${NETSTAT}    10    20    1
+        """
+        # Convert parameters
+        start_row = int(start_row)
+        end_row = int(end_row)
+        expected_count = int(expected_count)
+        
+        # Normalize case_sensitive parameter
+        try:
+            case_sensitive_flag = str(case_sensitive).lower() not in ("false", "0", "no", "n")
+        except Exception:
+            case_sensitive_flag = True
+        
+        # Capture current screen content
+        result = subprocess.run([
+            "tmux", "capture-pane", "-p", "-t", self.session_name
+        ], capture_output=True, text=True, check=True)
+        
+        # Split into lines
+        lines = result.stdout.splitlines()
+        
+        # Validate row range
+        if start_row < 1 or start_row > len(lines):
+            raise AssertionError(f"Start row {start_row} out of range (screen has {len(lines)} lines)")
+        if end_row < 1 or end_row > len(lines):
+            raise AssertionError(f"End row {end_row} out of range (screen has {len(lines)} lines)")
+        
+        # Count occurrences in the specified row range
+        count = 0
+        search_str = str(search_text)
+        
+        for row_num in range(start_row, end_row + 1):
+            line = lines[row_num - 1]  # Convert to 0-based index
+            
+            if case_sensitive_flag:
+                count += line.count(search_str)
+            else:
+                count += line.lower().count(search_str.lower())
+        
+        self._log(
+            f"Occurrence count: Rows {start_row}-{end_row}: "
+            f"Expected={expected_count}, Actual={count}, "
+            f"Text='{search_str}', Case Sensitive={case_sensitive_flag}"
+        )
+        
+        if count != expected_count:
+            self._log("--- SCREEN DUMP (OCCURRENCE COUNT MISMATCH) ---")
+            logger.console(result.stdout)
+            raise AssertionError(
+                f"Text '{search_str}' occurrence count mismatch in rows {start_row}-{end_row}.\n"
+                f"Expected: {expected_count}\n"
+                f"Actual:   {count}"
+            )
+
+    def verify_all_values_on_same_line(self, values):
+        """Verifies that all comma-separated values appear on the same line.
+
+        Takes a comma-separated string of values and verifies that all values
+        appear together on at least one line of the screen.
+
+        Args:
+            values (str): Comma-separated values to search for (e.g., "ETHLIN02,ACTIVE").
+
+        Returns:
+            None
+
+        Raises:
+            AssertionError: If no line contains all the specified values.
+            subprocess.CalledProcessError: If tmux capture-pane fails.
+
+        Examples:
+            Verify All Values On Same Line    ${WRKCFGSTS}
+            Verify All Values On Same Line    ETHLIN02,ACTIVE
+        """
+        # Split the comma-separated values
+        value_list = [v.strip() for v in str(values).split(',')]
+        
+        # Capture current screen content
+        result = subprocess.run([
+            "tmux", "capture-pane", "-p", "-t", self.session_name
+        ], capture_output=True, text=True, check=True)
+        
+        # Check each line to see if it contains all values
+        lines = result.stdout.splitlines()
+        found_line = None
+        
+        for line_num, line in enumerate(lines, start=1):
+            if all(value in line for value in value_list):
+                found_line = line_num
+                break
+        
+        self._log(
+            f"Verifying all values on same line: {value_list}"
+        )
+        
+        if found_line:
+            self._log(f"All values found together on line {found_line}")
+        else:
+            self._log("--- SCREEN DUMP (VALUES NOT ON SAME LINE) ---")
+            logger.console(result.stdout)
+            raise AssertionError(
+                f"Could not find all values on the same line: {value_list}"
+            )
+
+    def verify_numeric_value_greater_than(self, row, start_col, end_col, minimum_value):
+        """Verifies that a numeric value at a position is greater than a minimum.
+
+        Extracts text from the screen at specified coordinates, converts it to an
+        integer, and verifies it's greater than the minimum value.
+
+        Args:
+            row (int or str): The row number (1-based) where the value appears.
+            start_col (int or str): The starting column number (1-based).
+            end_col (int or str): The ending column number (1-based).
+            minimum_value (int or str): The minimum value (exclusive).
+
+        Returns:
+            None
+
+        Raises:
+            AssertionError: If the value is not greater than the minimum.
+            ValueError: If the extracted text cannot be converted to an integer.
+            subprocess.CalledProcessError: If tmux capture-pane fails.
+
+        Examples:
+            Verify Numeric Value Greater Than    3    68    71    ${DSPLIB}
+            Verify Numeric Value Greater Than    5    10    15    1000
+        """
+        # Convert parameters
+        row = int(row)
+        start_col = int(start_col)
+        end_col = int(end_col)
+        minimum_value = int(minimum_value)
+        
+        # Capture current screen content
+        result = subprocess.run([
+            "tmux", "capture-pane", "-p", "-t", self.session_name
+        ], capture_output=True, text=True, check=True)
+        
+        # Split into lines
+        lines = result.stdout.splitlines()
+        
+        # Validate row number
+        if row < 1 or row > len(lines):
+            raise AssertionError(f"Row {row} out of range (screen has {len(lines)} lines)")
+        
+        # Extract the line and text at position
+        line = lines[row - 1]
+        actual_text = line[start_col - 1:end_col].strip()
+        
+        # Convert to integer
+        try:
+            actual_value = int(actual_text)
+        except ValueError:
+            self._log("--- SCREEN DUMP (NON-NUMERIC VALUE) ---")
+            logger.console(result.stdout)
+            raise ValueError(
+                f"Text at position (row={row}, cols={start_col}-{end_col}) is not numeric.\n"
+                f"Actual text: '{actual_text}'"
+            )
+        
+        self._log(
+            f"Numeric comparison: Row {row}, Cols {start_col}-{end_col}: "
+            f"Actual={actual_value}, Minimum={minimum_value}"
+        )
+        
+        if actual_value <= minimum_value:
+            self._log("--- SCREEN DUMP (VALUE NOT GREATER THAN MINIMUM) ---")
+            logger.console(result.stdout)
+            raise AssertionError(
+                f"Value at position (row={row}, cols={start_col}-{end_col}) is not greater than {minimum_value}.\n"
+                f"Actual value: {actual_value}"
+            )

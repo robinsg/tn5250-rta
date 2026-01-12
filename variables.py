@@ -23,14 +23,33 @@ def get_variables():
     - TN5250_SSL: SSL flag (0 or 1)
     - TN5250_DEVNAME: Optional device name
     - TN5250_MAP: Optional keyboard map number
+
+    Test Data Variables:
+    - DSPLICKEY: Display license key value
+    - DSPLIB: Display library value
+    - NETSTAT: Network statistics value
+    - QSECURITY: Security level value
+    - RUNQRY: Run query test data
+    - WRKCFGSTS: Work configuration status value
+    - WRKJRN: Work journal value
     """
     variables = {
+        # TN5250 connection variables
         'HOST': os.environ.get('TN5250_HOST', ''),
         'USER': os.environ.get('TN5250_USER', ''),
         'PASS': Secret(os.environ.get('TN5250_PASS', '')),
         'SSL': os.environ.get('TN5250_SSL', '0'),
         'DEVNAME': os.environ.get('TN5250_DEVNAME', ''),
         'MAP': os.environ.get('TN5250_MAP', '285'),
+        
+        # Test data variables (from .env.sh.* files)
+        'DSPLICKEY': os.environ.get('DSPLICKEY', ''),
+        'DSPLIB': os.environ.get('DSPLIB', ''),
+        'NETSTAT': os.environ.get('NETSTAT', ''),
+        'QSECURITY': os.environ.get('QSECURITY', ''),
+        'RUNQRY': os.environ.get('RUNQRY', ''),
+        'WRKCFGSTS': os.environ.get('WRKCFGSTS', ''),
+        'WRKJRN': os.environ.get('WRKJRN', ''),
     }
     
     return variables
