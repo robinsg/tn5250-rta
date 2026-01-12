@@ -16,12 +16,10 @@
     }
   },
   // Configure git and setup container on creation
-  // Add hostnames to container's /etc/hosts at runtime (replace IPs as needed)
+  // Host entries are managed via .devcontainer/hosts.conf and applied at startup
   "runArgs": [
-    "--network=host",
-    "--add-host=eur400a:172.16.8.41",
-    "--add-host=eur400t:172.16.8.43"
+    "--network=host"
   ],
-  "postCreateCommand": "git config --global user.name 'Glenn Robinson' && git config --global user.email 'Glenn.Robinson@rsipvm.com' && echo 'Container Ready! TN5250 installed.'",
+  "postCreateCommand": "bash .devcontainer/setup-hosts.sh && git config --global user.name 'Your Name' && git config --global user.email 'your.email@example.com' && echo 'Container Ready! TN5250 installed.'",
   "remoteUser": "root"
 }

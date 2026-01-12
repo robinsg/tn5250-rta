@@ -1,4 +1,5 @@
 {
     "python-envs.pythonProjects": [],
-    "robotcode.disableExtension": true
+    "robotcode.disableExtension": true,
+    "liveServer.settings.multiRootWorkspaceName": "tn5250-rta"
 }

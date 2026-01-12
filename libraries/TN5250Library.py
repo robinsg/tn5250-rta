@@ -3,6 +3,7 @@ import time
 import os
 import datetime
 from robot.api import logger
+from robot.utils import Secret
 
 class TN5250Library:
     """
@@ -128,9 +129,12 @@ class TN5250Library:
         """Types text into the terminal.
 
         Sends the specified text to the active TN5250 session as keyboard input.
+        Supports Robot Framework Secret type for passwords - the Secret will be
+        logged as '<secret>' but the actual value will be sent to the terminal.
 
         Args:
-            text (str): The text to type into the terminal.
+            text (str or Secret): The text to type into the terminal.
+                Can be a regular string or a Robot Framework Secret object.
 
         Returns:
             None
@@ -138,8 +142,11 @@ class TN5250Library:
         Raises:
             subprocess.CalledProcessError: If sending keys to tmux fails.
         """
+        # Extract actual value from Secret if needed, but log obfuscated version
+        actual_text = text.value if isinstance(text, Secret) else text
+        
         self._log(f"Typing: '{text}'")
-        subprocess.run(["tmux", "send-keys", "-t", self.session_name, text], check=True)
+        subprocess.run(["tmux", "send-keys", "-t", self.session_name, actual_text], check=True)
 
     def send_special_key(self, key_name):
         """Sends special keys to the terminal.

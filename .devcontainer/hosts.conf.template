@@ -1,0 +1,11 @@
+# Host Configuration File
+# Format: hostname ip_address
+# Lines starting with # are comments and will be ignored
+# 
+# Example entries (replace with your actual hosts):
+# dev400 192.168.1.100
+# prod400 192.168.1.200
+#
+# Uncomment and modify the examples below or add your own entries:
+# dev400 192.168.1.100
+# prod400 192.168.1.200
