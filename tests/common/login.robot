@@ -11,7 +11,6 @@ Login To IBM i
     ...                Captures screen for troubleshooting.
     [Tags]    login    smoke
     
-    # Debug: Capture initial screen to see what's actually displayed
     Sleep    2s    # Give screen time to render
     Capture Screen    initial_screen    image=True
     
