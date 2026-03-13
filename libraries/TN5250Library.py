@@ -5,31 +5,35 @@ import datetime
 from robot.api import logger
 from robot.utils import Secret
 
+from typing import Union, Optional
+
 class TN5250Library:
     """
     Robot Framework library for headless TN5250 testing via tmux.
     Supports SSL connections natively.
     """
 
-    def __init__(self, verbose=False):
+    ROBOT_LIBRARY_SCOPE = 'GLOBAL'
+
+    def __init__(self, verbose: Union[bool, str] = False):
         """Initialize the TN5250Library.
 
         Args:
             verbose (bool or str, optional): Enable verbose console output.
                 Accepts boolean values or string representations like "true", "1", "yes", "y".
                 Defaults to False.
-
-        Returns:
-            None
         """
         # Robot may pass boolean-like strings; normalize
-        try:
-            self.verbose = str(verbose).lower() in ("true", "1", "yes", "y")
-        except Exception:
-            self.verbose = False
+        self.verbose = self._is_true(verbose)
         self.session_name = "robot_tn5250_session"
 
-    def set_verbose(self, verbose=True):
+    def _is_true(self, value: Union[bool, str]) -> bool:
+        """Internal helper to normalize boolean-like values from Robot Framework."""
+        if isinstance(value, bool):
+            return value
+        return str(value).lower() in ("true", "1", "yes", "y")
+
+    def set_verbose(self, verbose: Union[bool, str] = True):
         """Keyword to enable/disable verbose console output.
 
         Args:
@@ -64,7 +68,7 @@ class TN5250Library:
         if getattr(self, "verbose", False):
             logger.console(message)
 
-    def start_tn5250_session(self, hostname, ssl, devname=None, map=285):
+    def start_tn5250_session(self, hostname: str, ssl: Union[bool, str], devname: Optional[str] = None, map: Union[int, str] = 285):
         """Starts tn5250 in a background tmux session.
 
         Creates a headless tmux session with standard 80x24 screen dimensions
@@ -76,38 +80,35 @@ class TN5250Library:
                 Accepts boolean values or string representations.
             devname (str, optional): The device name to use for the connection.
                 If provided, sets the DEVNAME environment variable. Defaults to None.
-            map (int, optional): The character map code to use. Defaults to 285.
-
-        Returns:
-            None
+            map (int or str, optional): The character map code to use. Defaults to 285.
 
         Raises:
             subprocess.CalledProcessError: If tmux session creation fails.
         """
         self.stop_tn5250_session() # Cleanup any old sessions
         
-        # Normalize ssl parameter (Robot may pass strings like "0", "1", "true", etc.)
-        try:
-            ssl_enabled = str(ssl).lower() in ("true", "1", "yes", "y")
-        except Exception:
-            ssl_enabled = False
+        ssl_enabled = self._is_true(ssl)
         
         # Construct the command: 'tn5250 ssl:172.16.8.41'
         prefix = "ssl:" if ssl_enabled else ""
         
         cmd = f"tn5250 {prefix}{hostname} map={map}"
-        if devname is not None:
+        if devname:
             cmd += f" env.DEVNAME={devname}"
         
         self._log(f"Starting session: {cmd}")
         
-        # Start headless tmux session (-d) with standard 80x24 screen
-        subprocess.run([
-            "tmux", "new-session", "-d",
-            "-s", self.session_name,
-            "-x", "80", "-y", "24",
-            cmd
-        ], check=True)
+        try:
+            # Start headless tmux session (-d) with standard 80x24 screen
+            subprocess.run([
+                "tmux", "new-session", "-d",
+                "-s", self.session_name,
+                "-x", "80", "-y", "24",
+                cmd
+            ], check=True, capture_output=True, text=True)
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Failed to start tmux session: {e.stderr}")
+            raise RuntimeError(f"Could not start TN5250 session via tmux: {e.stderr}")
         
         time.sleep(3) # Give SSL handshake a moment to finish
 
@@ -125,7 +126,7 @@ class TN5250Library:
             "tmux", "kill-session", "-t", self.session_name
         ], stderr=subprocess.DEVNULL)
 
-    def send_text(self, text):
+    def send_text(self, text: Union[str, Secret]):
         """Types text into the terminal.
 
         Sends the specified text to the active TN5250 session as keyboard input.
@@ -136,9 +137,6 @@ class TN5250Library:
             text (str or Secret): The text to type into the terminal.
                 Can be a regular string or a Robot Framework Secret object.
 
-        Returns:
-            None
-
         Raises:
             subprocess.CalledProcessError: If sending keys to tmux fails.
         """
@@ -148,7 +146,7 @@ class TN5250Library:
         self._log(f"Typing: '{text}'")
         subprocess.run(["tmux", "send-keys", "-t", self.session_name, actual_text], check=True)
 
-    def send_special_key(self, key_name):
+    def send_special_key(self, key_name: str):
         """Sends special keys to the terminal.
 
         Sends special keys like Enter, Tab, function keys, or Backspace to the
@@ -168,7 +166,7 @@ class TN5250Library:
         subprocess.run(["tmux", "send-keys", "-t", self.session_name, key_name], check=True)
         time.sleep(0.5) # Wait for screen refresh
 
-    def screen_should_contain(self, expected_text, timeout=10):
+    def screen_should_contain(self, expected_text: str, timeout: Union[int, str] = 10) -> bool:
         """Waits for text to appear on screen.
 
         Polls the TN5250 screen content until the expected text is found or
@@ -177,10 +175,7 @@ class TN5250Library:
 
         Args:
             expected_text (str): The text to search for on the screen.
-            timeout (int or str, optional): Maximum time in seconds to wait for
-            bool: True if the text is found within the timeout period. This method
-            never returns False or None; on timeout it raises an AssertionError.
-            never returns False or None; on timeout it raises an AssertionError.
+            timeout (int or str, optional): Maximum time in seconds to wait for text.
 
         Returns:
             bool: True if the text is found within the timeout period.

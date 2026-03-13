@@ -1,0 +1,3 @@
+[robocop]
+ignore = COM01,TAG05
+line-length = 120

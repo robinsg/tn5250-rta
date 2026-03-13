@@ -1,31 +1,33 @@
 *** Settings ***
-Documentation    Common keywords for TN5250 terminal emulation testing on IBM i.
-...              Provides session management, authentication, and command execution.
-...              Requires environment variables: HOST, USER, PASS, SSL, DEVNAME, MAP.
+Documentation       Common keywords for TN5250 terminal emulation testing on IBM i.
+...                 Provides session management, authentication, and command execution.
+...                 Requires environment variables: HOST, USER, PASS, SSL, DEVNAME, MAP.
 
-Variables    ${EXECDIR}/variables.py
-Library      ${EXECDIR}/libraries/TN5250Library.py    False
+Variables           ${EXECDIR}/variables.py
+Library             ${EXECDIR}/libraries/TN5250Library.py    False
+
 
 *** Keywords ***
 Open Session To Host
     [Documentation]    Starts TN5250 session to IBM i using environment variables.
-    ...                Typically used in Suite Setup.
+    ...    Typically used in Suite Setup.
+    ...    Requires: ${HOST}, ${SSL}, ${DEVNAME}, ${MAP}.
     Start TN5250 Session    ${HOST}    ssl=${SSL}    devname=${DEVNAME}    map=${MAP}
 
 Close Session
     [Documentation]    Terminates the TN5250 session and cleans up resources.
-    ...                Typically used in Suite Teardown.
+    ...    Typically used in Suite Teardown.
     Stop TN5250 Session
 
 Verify Sign On Screen
     [Documentation]    Waits for "Sign On" text to appear on screen.
-    ...                Args: timeout (default: 10 seconds).
+    ...    Args: timeout (default: 10 seconds).
     [Arguments]    ${timeout}=10
     Screen Should Contain    Sign On    timeout=${timeout}
 
 Login With Credentials
     [Documentation]    Enters username and password on sign-on screen, then submits.
-    ...                Args: username (default: ${USER}), password (default: ${PASS}).
+    ...    Args: username (default: ${USER}), password (default: ${PASS}).
     [Arguments]    ${username}=${USER}    ${password}=${PASS}
     Send Text    ${username}
     Send Special Key    Tab
@@ -34,7 +36,7 @@ Login With Credentials
 
 Verify Login Success
     [Documentation]    Waits for "Sign-on Information" text confirming successful login.
-    ...                Args: timeout (default: 10 seconds).
+    ...    Args: timeout (default: 10 seconds).
     [Arguments]    ${timeout}=10
     Screen Should Contain    Sign-on Information    timeout=${timeout}
 
@@ -44,7 +46,8 @@ Continue Login Session
 
 Execute Command And Verify
     [Documentation]    Types command, presses Enter, and captures screen.
-    ...                Args: command (IBM i command to execute).
+    ...    Arguments:
+    ...    - command: The IBM i command to execute (string).
     [Arguments]    ${command}
     Send Text    ${command}
     Send Special Key    Enter

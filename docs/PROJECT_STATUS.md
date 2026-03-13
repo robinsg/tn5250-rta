@@ -31,7 +31,7 @@ This document provides a comprehensive overview of the TN5250-RT project, includ
 ## Project Overview
 
 ### Purpose
-TN5250-RT is a React/TypeScript-based terminal emulator for the IBM 5250 protocol, providing modern web-based access to legacy IBM i systems and terminals.
+TN5250-RT is a terminal emulator testing framework for the IBM 5250 protocol, providing automated testing capabilities for IBM i systems.
 
 ### Key Objectives
 - Enable seamless web-based access to IBM 5250 terminals
@@ -41,10 +41,10 @@ TN5250-RT is a React/TypeScript-based terminal emulator for the IBM 5250 protoco
 - Support enterprise-grade terminal emulation features
 
 ### Technologies
-- **Frontend:** React, TypeScript, Modern JavaScript
-- **Communication:** WebSocket/TCP for terminal protocol
-- **Build System:** Standard Node.js toolchain
-- **Testing:** Unit and integration testing frameworks
+- **Framework:** Robot Framework
+- **Language:** Python (custom library)
+- **Infrastructure:** tmux (headless terminal management)
+- **Testing:** Functional and system testing
 - **Documentation:** Markdown-based documentation
 
 ---

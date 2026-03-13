@@ -1,23 +1,24 @@
 *** Settings ***
-Documentation    Validates IBM i database functionality and integrity.
-...              Tests using QIWS sample library. Requires database access authority.
+Documentation       Validates IBM i database functionality and integrity.
+...                 Tests using QIWS sample library. Requires database access authority.
 
-Resource    ../../resources/common.robot
+Resource            ../../resources/common.resource
+
 
 *** Test Cases ***
 Verify Database Objects
     [Documentation]    Confirms QIWS library and QCUSTCDT sample file are accessible via RUNQRY.
-    ...                Verifies string value at row 10 columns 35 to 46 equals ${RUNQRY}.
+    ...    Verifies string value at row 10 columns 35 to 46 equals ${RUNQRY}.
     [Tags]    database    objects
-    
+
     Execute Command And Verify    RUNQRY QRYFILE((QIWS/QCUSTCDT))
     Screen Should Contain At Position    10    35    46    ${RUNQRY}
     Send Special Key    F3
-    
+
 Check Database Integrity
     [Documentation]    Placeholder for database integrity checks (CHKOBJ, VFYOBJ).
-    ...                Not yet implemented.
+    ...    Not yet implemented.
     [Tags]    database    integrity
-    
+
     # TODO: Implement database integrity checks
     Log    Database integrity check not yet implemented
